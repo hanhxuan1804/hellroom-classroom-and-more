@@ -1,25 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-
-* > * {
-
-    font-family: "Poppins", cursive;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-
+.App{
+    display: flex;
+    flex-direction: column;
 }
-
-.App-main{
-  min-height: 90vh;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  background: url('../../assets/bg.jpg');
-  
-  background-size: 100% 100%;
-  background-position: center;
-}
-
-
