@@ -67,7 +67,7 @@ function Header() {
         },
         {
           name: "Logout",
-          link: "/login",
+          link: "/auth/login",
         },
       ],
     },

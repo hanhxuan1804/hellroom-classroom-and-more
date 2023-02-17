@@ -7,13 +7,13 @@ import Header from "../common/header"
 const ProtectedLayout = () => {
     const navigate = useNavigate();
     const user = useAuth();
-    user.token = 'this is a token'
-    console.log(user);
+    // user.token = 'this is a token'
+    // console.log(user);
     useEffect(
         () => {
             if (!user.token) {
-                console.log("No token found");
-                navigate("/login");
+                // console.log("No token found");
+                navigate("/auth/login");
             }
         }
     )
