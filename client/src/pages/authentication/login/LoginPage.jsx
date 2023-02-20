@@ -9,10 +9,16 @@ import {
   IconButton,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { useSnackbar } from "notistack";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "../../api";
+import { useAuth } from "../../../context/auth-context";
+
 import "./LoginPage.css";
-import { Link } from "react-router-dom";
 
 function LoginPage() {
+  const Auth = useAuth();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
@@ -22,8 +28,21 @@ function LoginPage() {
     control,
     formState: { errors },
   } = useForm();
-  const onSubmit = (data) => {
-    console.log(data);
+  const { enqueueSnackbar } = useSnackbar();
+  const onSubmit = async (data) => {
+    try {
+      const result = await login(data);
+      if (result.status === 200) {
+        Auth.login(result.data.token, result.data.user);
+        navigate("/");
+      }
+    } catch (error) {
+      if (error.response) {
+        const { data } = error.response;
+        const message = `Login failed. ${data.message}`;
+        enqueueSnackbar(message, { variant: "error" });
+      }
+    }
   };
   return (
     <div className="login_page">
@@ -99,6 +118,7 @@ function LoginPage() {
             />
           )}
         />
+        <div className="extend-box">
         <Controller
           name="remember"
           control={control}
@@ -110,6 +130,8 @@ function LoginPage() {
             />
           )}
         />
+        <Link to={"/auth/forgot-password"}>Forgot password?</Link>
+        </div>
         <Button type="submit" variant="contained" color="primary" fullWidth>
           Login
         </Button>

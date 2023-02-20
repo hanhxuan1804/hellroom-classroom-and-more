@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { Button, Divider, Menu, MenuItem, TextField } from "@mui/material";
 import { useState } from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useAuth } from "../../../hooks/useAuth";
+import { useAuth } from "../../../context/auth-context";
 import LogoutIcon from '@mui/icons-material/Logout';
+import { AccountCircle, Groups3, Slideshow } from "@mui/icons-material";
 
 const theme = createTheme({
   palette: {
@@ -24,6 +25,7 @@ function Header() {
     {
       name: "Group",
       link: "/group",
+      icon: <Groups3/>,
       options: [
         {
           name: "Join Group",
@@ -42,6 +44,7 @@ function Header() {
     {
       name: "Presentation",
       link: "/presentation",
+      icon: <Slideshow/>,
       options: [
         {
           name: "Join Presentation",
@@ -58,8 +61,9 @@ function Header() {
       ],
     },
     {
-      name: "Username",
+      name: `${auth.user?.lastName}`,
       link: "/user",
+      icon: <AccountCircle/>,
       options: [
         {
           name: "Profile",
@@ -126,6 +130,7 @@ function Header() {
                     setAnchorEl(event.currentTarget);
                     setMenuName(item.name);
                   }}
+                  startIcon={item.icon}
                   className="Header__right__item"
                 >
                   {item.name}

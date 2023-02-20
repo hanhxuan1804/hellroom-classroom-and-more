@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom"
-import { useAuth } from "../../hooks/useAuth"
+import { useAuth } from "../../context/auth-context";
 import Header from "../common/header"
 
 

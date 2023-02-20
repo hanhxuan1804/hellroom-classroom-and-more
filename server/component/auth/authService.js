@@ -10,8 +10,8 @@ exports.register = async (req, res) => {
     const v = new Validator(req.body, {
         email: 'required|email|minLength:4|maxLength:100|unique:User,email',
         password: 'required|minLength:6|maxLength:100',
-        fullName: 'required|minLength:4|maxLength:100',
-        dateOfBirth: 'required|date',
+        firstName: 'required|minLength:2|maxLength:100',
+        lastName: 'required|minLength:2|maxLength:100',
     });
     const matched = await v.check();
     if(!matched){
@@ -21,8 +21,8 @@ try{
     const userObject = new User({
         email: req.body.email,
         password: req.body.password,
-        fullName: req.body.fullName,
-        dateOfBirth: req.body.dateOfBirth,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
     });
     let user = await userObject.save();
 

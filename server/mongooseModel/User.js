@@ -6,8 +6,9 @@ const bcrypt = require('bcrypt');
 const user = new Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  fullName: { type: String, required: true },
-  dateOfBirth: { type: Date, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  dateOfBirth: { type: Date},
   created: { type: Date, default: Date.now },
   updated: { type: Date, default: Date.now },
   status: { type: String, default: 'active' },

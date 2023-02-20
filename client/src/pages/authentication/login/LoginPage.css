@@ -27,3 +27,10 @@ p {
     font-weight: 400;
     margin-bottom: 20px;
 }
+.extend-box {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}

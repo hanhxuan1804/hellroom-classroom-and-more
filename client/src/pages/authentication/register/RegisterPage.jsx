@@ -2,20 +2,47 @@ import { Controller, useForm } from "react-hook-form";
 import { Button, TextField, IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { register } from "../../api";
+import { useSnackbar } from "notistack";
+
 import "./RegisterPage.css";
 
 const RegisterPage = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const {
     handleSubmit,
     control,
     watch,
+    setError,
     formState: { errors },
   } = useForm();
-  const onSubmit = (data) => {
-    console.log(data);
+  const { enqueueSnackbar } = useSnackbar();
+  const onSubmit = async (data) => {
+    try {
+      const result = await register(data);
+      if (result.status === 201) {
+        enqueueSnackbar("Register successfully! Please login", { variant: "success" });
+        navigate("/auth/login");
+      }
+      else {
+        enqueueSnackbar("Register failed", { variant: "error" });
+      }
+    } catch (error) {
+      console.log(error);
+      if (error.response) {
+        const { data } = error.response;
+        console.log('data: ', data);
+        Object.keys(data).forEach((key) => {
+          setError(key, { 
+            type: "manual",
+            rule: "existed",
+            message: data[key].message, });
+        });
+      }
+    }
   };
   return (
     <div className="register_page">
