@@ -1,10 +1,17 @@
 import { Controller, useForm } from "react-hook-form";
-import { Button, TextField, IconButton, InputAdornment } from "@mui/material";
+import {
+  Button,
+  TextField,
+  IconButton,
+  InputAdornment,
+  CircularProgress,
+} from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { register } from "../../api";
+import { useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
+import { register } from "../../api";
 
 import "./RegisterPage.css";
 
@@ -20,29 +27,31 @@ const RegisterPage = () => {
     formState: { errors },
   } = useForm();
   const { enqueueSnackbar } = useSnackbar();
-  const onSubmit = async (data) => {
-    try {
-      const result = await register(data);
-      if (result.status === 201) {
-        enqueueSnackbar("Register successfully! Please login", { variant: "success" });
-        navigate("/auth/login");
-      }
-      else {
-        enqueueSnackbar("Register failed", { variant: "error" });
-      }
-    } catch (error) {
-      console.log(error);
+  const mutation = useMutation(register, {
+    onSuccess: (data) => {
+      enqueueSnackbar("Register successfully! Please login", {
+        variant: "success",
+      });
+      navigate("/auth/login");
+    },
+    onError: (error) => {
       if (error.response) {
         const { data } = error.response;
-        console.log('data: ', data);
         Object.keys(data).forEach((key) => {
-          setError(key, { 
+          setError(key, {
             type: "manual",
             rule: "existed",
-            message: data[key].message, });
+            message: data[key].message,
+          });
         });
+      } else {
+        const message = `Register failed. ${error.message}`;
+        enqueueSnackbar(message, { variant: "error" });
       }
-    }
+    },
+  });
+  const onSubmit = async (data) => {
+    mutation.mutate(data);
   };
   return (
     <div className="register_page">
@@ -212,7 +221,11 @@ const RegisterPage = () => {
           )}
         />
         <Button type="submit" variant="contained" color="primary" fullWidth>
-          Register
+          {mutation.isLoading ? (
+            <CircularProgress color="inherit" size={24} />
+          ) : (
+            "Register"
+          )}
         </Button>
       </form>
     </div>

@@ -1,5 +1,5 @@
 import { Controller, useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Button,
   Checkbox,
@@ -7,10 +7,12 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import { Link, useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { login } from "../../api";
 import { useAuth } from "../../../context/auth-context";
 
@@ -25,24 +27,41 @@ function LoginPage() {
   };
   const {
     handleSubmit,
+    setError,
+    watch,
+    clearErrors,
     control,
     formState: { errors },
   } = useForm();
   const { enqueueSnackbar } = useSnackbar();
-  const onSubmit = async (data) => {
-    try {
-      const result = await login(data);
-      if (result.status === 200) {
-        Auth.login(result.data.token, result.data.user);
-        navigate("/");
-      }
-    } catch (error) {
+  const mutation = useMutation(login, {
+    onSuccess: (data) => {
+      const result = data.data;
+      Auth.login(result.token, result.user);
+      navigate("/");
+    },
+    onError: (error) => {
       if (error.response) {
         const { data } = error.response;
-        const message = `Login failed. ${data.message}`;
+        setError("all", {
+          type: "manual",
+          rule: "wrong",
+          message: data.message,
+        });
+      } else {
+        const message = `Login failed. ${error.message}`;
         enqueueSnackbar(message, { variant: "error" });
       }
-    }
+    },
+  });
+  const watchEmail = watch("email");
+  const watchPassword = watch("password");
+  useEffect(() => {
+    clearErrors("all");
+  }, [watchEmail, watchPassword, clearErrors]);
+
+  const onSubmit = async (data) => {
+    mutation.mutate(data);
   };
   return (
     <div className="login_page">
@@ -114,27 +133,39 @@ function LoginPage() {
               margin="normal"
               fullWidth
               error={Boolean(errors?.password)}
-              helperText={errors?.password?.message}
+              helperText={
+                errors?.password?.message || (
+                  <div style={{ color: "red" }}>{errors?.all?.message}</div>
+                )
+              }
             />
           )}
         />
         <div className="extend-box">
-        <Controller
-          name="remember"
-          control={control}
-          defaultValue={false}
-          render={({ field }) => (
-            <FormControlLabel
-              control={<Checkbox {...field} />}
-              label="Remember me"
-            />
-          )}
-        />
-        <Link to={"/auth/forgot-password"}>Forgot password?</Link>
+          <Controller
+            name="remember"
+            control={control}
+            defaultValue={false}
+            render={({ field }) => (
+              <FormControlLabel
+                control={<Checkbox {...field} />}
+                label="Remember me"
+              />
+            )}
+          />
+          <Link to={"/auth/forgot-password"}>Forgot password?</Link>
         </div>
         <Button type="submit" variant="contained" color="primary" fullWidth>
-          Login
+          {mutation.isLoading ? (
+            <CircularProgress color="inherit" size={24} />
+          ) : (
+            "Login"
+          )}
         </Button>
+        {/* <Backdrop
+          sx={{ color: "#fff00", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={mutation.isLoading}
+        /> */}
       </form>
     </div>
   );
