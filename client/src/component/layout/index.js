@@ -1,3 +1,4 @@
 import ProtectedLayout from "./ProtectedLayout";
-
-export { ProtectedLayout };
+import ProfilePageLayout from "./ProfilePageLayout";
+export { ProtectedLayout,
+         ProfilePageLayout };

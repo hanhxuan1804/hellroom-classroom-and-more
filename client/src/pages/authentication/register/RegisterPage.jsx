@@ -27,29 +27,32 @@ const RegisterPage = () => {
     formState: { errors },
   } = useForm();
   const { enqueueSnackbar } = useSnackbar();
-  const mutation = useMutation(register, {
-    onSuccess: (data) => {
-      enqueueSnackbar("Register successfully! Please login", {
-        variant: "success",
-      });
-      navigate("/auth/login");
-    },
-    onError: (error) => {
-      if (error.response) {
-        const { data } = error.response;
-        Object.keys(data).forEach((key) => {
-          setError(key, {
-            type: "manual",
-            rule: "existed",
-            message: data[key].message,
-          });
-        });
-      } else {
-        const message = `Register failed. ${error.message}`;
-        enqueueSnackbar(message, { variant: "error" });
-      }
-    },
-  });
+ const mutation = useMutation(register, {
+     onSuccess: (data) => {
+       enqueueSnackbar("Register successfully! Please login", {
+         variant: "success",
+       });
+       navigate("/auth/login");
+     },
+     onError: (error) => {
+       switch (error.response.status) {
+       case 400:
+         const { data } = error.response;
+         Object.keys(data).forEach((key) => {
+           setError(key, {
+             type: "manual",
+             rule: "existed",
+             message: data[key].message,
+           });
+         });
+         break;
+       default:
+         const message = `Register failed. ${error.message}`;
+         enqueueSnackbar(message, { variant: "error" });
+       }
+     },
+   });
+ 
   const onSubmit = async (data) => {
     mutation.mutate(data);
   };
