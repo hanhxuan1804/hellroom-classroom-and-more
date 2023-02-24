@@ -97,8 +97,8 @@
                     padding: "0 10px",
                     }}
                     size="small"
-                    color={isEidt ? "error" : "primary"}
-                    startIcon={isEidt ? <EditOff /> : <Edit />}
+                    color={"primary"}
+                    startIcon={<Edit />}
                     onClick={() => {
                     if (isEidt) {
                         navigate(-1);
@@ -107,7 +107,7 @@
                     }
                     }}
                 >
-                    {isEidt ? "Cancel" : "Edit Profile"}
+                    {"Edit Profile"}
                 </Button>
                 </Box>
             )}

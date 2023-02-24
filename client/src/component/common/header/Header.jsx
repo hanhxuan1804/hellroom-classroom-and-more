@@ -1,11 +1,25 @@
 import "./Header.css";
-import logo from "../../../assets/logo.png";
+import { logo, logosmall } from "../../../assets/images";
 import { useNavigate } from "react-router-dom";
-import { Button, Divider, Menu, MenuItem, TextField } from "@mui/material";
+import {
+  Button,
+  Divider,
+  Menu,
+  MenuItem,
+  TextField,
+  Toolbar,
+  useMediaQuery,
+  IconButton,
+  Drawer,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useAuth } from "../../../context/auth-context";
-import LogoutIcon from '@mui/icons-material/Logout';
+import { Menu as MenuIcon, Logout as LogoutIcon , ExpandMore as ExpandMoreIcon} from "@mui/icons-material";
 import { AccountCircle, Groups3, Slideshow } from "@mui/icons-material";
 
 const theme = createTheme({
@@ -25,7 +39,7 @@ function Header() {
     {
       name: "Group",
       link: "/group",
-      icon: <Groups3/>,
+      icon: <Groups3 />,
       options: [
         {
           name: "Join Group",
@@ -44,7 +58,7 @@ function Header() {
     {
       name: "Presentation",
       link: "/presentation",
-      icon: <Slideshow/>,
+      icon: <Slideshow />,
       options: [
         {
           name: "Join Presentation",
@@ -63,11 +77,15 @@ function Header() {
     {
       name: `${auth.user?.lastName}`,
       link: "/user",
-      icon: <AccountCircle/>,
+      icon: <AccountCircle />,
       options: [
         {
           name: "Profile",
           link: "/user/profile",
+        },
+        {
+          name: "Change Password",
+          link: "/user/changepassword",
         },
         {
           name: "Logout",
@@ -76,12 +94,18 @@ function Header() {
       ],
     },
   ];
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <ThemeProvider theme={theme}>
       <div className="Header">
         <div className="Header__left">
           <div onClick={() => navigate("/")} className="Header__logo">
-            <img className="logo" src={logo} alt="logo" />
+            <img
+              className="logo"
+              src={isSmallScreen ? logosmall : logo}
+              alt="logo"
+            />
           </div>
           <div className="Header__joinbox">
             <TextField
@@ -109,79 +133,148 @@ function Header() {
                 backgroundColor: "#0b5c6d",
                 borderColor: "#0b5c6d",
               }}
+              size="small"
             >
               Join
             </Button>
           </div>
         </div>
         <div className="Header__right">
-          {navbarItems.map((item, index) => {
-            return (
-              <div key={index}>
-                <Button
-                  variant="outlined"
-                  style={{
-                    color: "white",
-                    borderColor: "white",
-                    borderRadius: "20px",
-                    marginRight: "10px",
-                  }}
-                  onClick={(event) => {
-                    setAnchorEl(event.currentTarget);
-                    setMenuName(item.name);
-                  }}
-                  startIcon={item.icon}
-                  className="Header__right__item"
-                >
-                  {item.name}
-                </Button>
-                {menuName === item.name && (
-                  <Menu
-                    id={`${item.name}-menu`}
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={() => {
-                      setAnchorEl(null);
-                      setMenuName(null);
+          {isSmallScreen ? (
+            <Toolbar
+              sx={{
+                paddingRight: 0,
+              }}
+            >
+              <IconButton
+                edge="end"
+                color="inherit"
+                aria-label="menu"
+                onClick={(event) => {
+                  setAnchorEl(event.currentTarget);
+                  setMenuName("Menu");
+                }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Drawer
+                anchor="right"
+                open={Boolean(anchorEl)}
+                onClose={() => {
+                  setAnchorEl(null);
+                  setMenuName(null);
+                }}
+                sx={{
+                  "& .MuiDrawer-paper": {
+                    boxSizing: "border-box",
+                    width: "250px",
+                  },
+                }}
+              >
+                {navbarItems.map((item, index) => {
+                  return(
+                  <Accordion>
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      aria-controls="panel1a-content"
+                      id="panel1a-header"
+                    >
+                      {item.icon}
+                      <Typography sx={{marginLeft:"5px"}}>{item.name}</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      {item.options.map((option, index) => {
+                        return (
+                          <div key={index}>
+                            <Divider />
+                            <MenuItem
+                              key={index}
+                              onClick={() => {
+                                setAnchorEl(null);
+                                setMenuName(null);
+                                navigate(option.link);
+                              }}
+                            >
+                              {option.name}
+                            </MenuItem>
+                          </div>
+                        );
+                      })}
+                    </AccordionDetails>
+                  </Accordion>
+                  );
+                })}
+              </Drawer>
+            </Toolbar>
+          ) : (
+            navbarItems.map((item, index) => {
+              return (
+                <div key={index}>
+                  <Button
+                    variant="outlined"
+                    style={{
+                      color: "white",
+                      borderColor: "white",
+                      borderRadius: "20px",
+                      marginRight: "10px",
                     }}
-                    MenuListProps={{
-                      "aria-labelledby": "basic-button",
+                    onClick={(event) => {
+                      setAnchorEl(event.currentTarget);
+                      setMenuName(item.name);
                     }}
+                    startIcon={item.icon}
+                    className="Header__right__item"
                   >
-                    {item.options.map((option, index) => {
-                      return option.name === "Logout" ? (
-                        <div key={index}>
-                          <Divider />
+                    {item.name}
+                  </Button>
+                  {menuName === item.name && (
+                    <Menu
+                      id={`${item.name}-menu`}
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl)}
+                      onClose={() => {
+                        setAnchorEl(null);
+                        setMenuName(null);
+                      }}
+                      MenuListProps={{
+                        "aria-labelledby": "basic-button",
+                      }}
+                    >
+                      {item.options.map((option, index) => {
+                        return option.name === "Logout" ? (
+                          <div key={index}>
+                            <Divider />
+                            <MenuItem
+                              key={index}
+                              onClick={() => {
+                                auth.logout();
+                                setAnchorEl(null);
+                                navigate(option.link);
+                              }}
+                            >
+                              <Button color="error" startIcon={<LogoutIcon />}>
+                                Logout
+                              </Button>
+                            </MenuItem>
+                          </div>
+                        ) : (
                           <MenuItem
                             key={index}
                             onClick={() => {
-                              auth.logout();
                               setAnchorEl(null);
                               navigate(option.link);
                             }}
                           >
-                            <Button color="error" startIcon={<LogoutIcon/>}>Logout</Button>
+                            {option.name}
                           </MenuItem>
-                        </div>
-                      ) : (
-            
-                        <MenuItem
-                          key={index}
-                          onClick={() => {
-                            setAnchorEl(null);
-                            navigate(option.link);
-                          }}
-                        >
-                          {option.name}
-                        </MenuItem>
-                  
-                      );
-                    })}
-                  </Menu>
-                )}
-              </div>
-            );
-          })}
+                        );
+                      })}
+                    </Menu>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </ThemeProvider>

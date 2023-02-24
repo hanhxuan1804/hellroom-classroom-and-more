@@ -5,7 +5,7 @@ import { Box, Grid, Typography, TextField, Button } from "@mui/material";
 import { CancelOutlined, Save } from "@mui/icons-material";
 
 const EditProfilePage = () => {
-  const { user, updateUser } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const {
     control,
