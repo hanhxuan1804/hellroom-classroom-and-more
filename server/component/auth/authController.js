@@ -5,6 +5,7 @@ const passport = require('./passport');
 
 router.post('/register', auth.register);
 router.post('/login', auth.login);
+router.post('/verify-email', auth.verify);
 router.get('/profile', passport.authenticate('jwt', { session: false }), auth.profile);
 
 module.exports = router;

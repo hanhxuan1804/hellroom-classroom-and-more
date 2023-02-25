@@ -11,7 +11,8 @@ const user = new Schema({
   dateOfBirth: { type: Date},
   created: { type: Date, default: Date.now },
   updated: { type: Date, default: Date.now },
-  status: { type: String, default: 'active' },
+  active: { type: Boolean, default: false },
+  role: { type: String, default: 'user' },
   deleted: { type: Boolean, default: false },
 });
 

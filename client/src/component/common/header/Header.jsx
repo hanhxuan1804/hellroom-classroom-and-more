@@ -173,7 +173,7 @@ function Header() {
               >
                 {navbarItems.map((item, index) => {
                   return(
-                  <Accordion>
+                  <Accordion key={index}>
                     <AccordionSummary
                       expandIcon={<ExpandMoreIcon />}
                       aria-controls="panel1a-content"

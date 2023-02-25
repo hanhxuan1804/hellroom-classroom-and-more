@@ -19,9 +19,12 @@ export const AuthProvider = ({ children }) => {
         window.localStorage.removeItem('user');
         setUser(null);
     };
+    const isAuthenticated = () => {
+        return token !== null; 
+    };
 
     const value = useMemo(() => {
-        return { token, user , login, logout };
+        return { token, user , login, logout, isAuthenticated };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 

@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate , Navigate} from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { login } from "../../api";
 import { useAuth } from "../../../context/auth-context";
@@ -35,11 +35,11 @@ function LoginPage() {
   } = useForm();
   const { enqueueSnackbar } = useSnackbar();
   const mutation = useMutation(login, {
-    onSuccess: (data) => {
-      const result = data.data;
-      Auth.login(result.token, result.user);
-      navigate("/");
-    },
+   onSuccess: (data) => {
+     const result = data.data;
+     result.user.role === "admin" ? Auth.login(result.token, result.user) && navigate("/admin") :
+      result.user.active ? Auth.login(result.token, result.user) && navigate("/") : navigate("/auth/active");
+   },
     onError: (error) => {
       if (error.response) {
         const { data } = error.response;
@@ -63,6 +63,9 @@ function LoginPage() {
   const onSubmit = async (data) => {
     mutation.mutate(data);
   };
+  if (Auth.isAuthenticated()) {
+    return <Navigate to="/" />;
+  }
   return (
     <div className="login_page">
       <form onSubmit={handleSubmit(onSubmit)} className="login_form">
@@ -135,7 +138,7 @@ function LoginPage() {
               error={Boolean(errors?.password)}
               helperText={
                 errors?.password?.message || (
-                  <div style={{ color: "red" }}>{errors?.all?.message}</div>
+                  <span style={{ color: "red" }}>{errors?.all?.message}</span>
                 )
               }
             />
