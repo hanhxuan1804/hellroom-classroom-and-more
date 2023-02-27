@@ -15,12 +15,17 @@ import {
   AccordionSummary,
   AccordionDetails,
   Typography,
+  Avatar,
 } from "@mui/material";
 import { useState } from "react";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import {
+  Menu as MenuIcon,
+  Logout as LogoutIcon,
+  ExpandMore as ExpandMoreIcon,
+} from "@mui/icons-material";
+import { Groups3, Slideshow } from "@mui/icons-material";
 import { useAuth } from "../../../context/auth-context";
-import { Menu as MenuIcon, Logout as LogoutIcon , ExpandMore as ExpandMoreIcon} from "@mui/icons-material";
-import { AccountCircle, Groups3, Slideshow } from "@mui/icons-material";
 
 const theme = createTheme({
   palette: {
@@ -30,8 +35,10 @@ const theme = createTheme({
   },
 });
 
-function Header() {
+function Header(props) {
   const auth = useAuth();
+  const { user } = props;
+
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuName, setMenuName] = useState(null);
@@ -75,9 +82,15 @@ function Header() {
       ],
     },
     {
-      name: `${auth.user?.lastName}`,
+      name: `${user?.lastName}`,
       link: "/user",
-      icon: <AccountCircle />,
+      icon: (
+        <Avatar
+          alt="avatar"
+          sx={{ width: 25, height: 25 }}
+          src={`${process.env.REACT_APP_API_URL}/user/avatar/${user?.avatar}`}
+        />
+      ),
       options: [
         {
           name: "Profile",
@@ -172,36 +185,52 @@ function Header() {
                 }}
               >
                 {navbarItems.map((item, index) => {
-                  return(
-                  <Accordion key={index}>
-                    <AccordionSummary
-                      expandIcon={<ExpandMoreIcon />}
-                      aria-controls="panel1a-content"
-                      id="panel1a-header"
-                    >
-                      {item.icon}
-                      <Typography sx={{marginLeft:"5px"}}>{item.name}</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      {item.options.map((option, index) => {
-                        return (
-                          <div key={index}>
-                            <Divider />
-                            <MenuItem
-                              key={index}
-                              onClick={() => {
-                                setAnchorEl(null);
-                                setMenuName(null);
-                                navigate(option.link);
-                              }}
-                            >
-                              {option.name}
-                            </MenuItem>
-                          </div>
-                        );
-                      })}
-                    </AccordionDetails>
-                  </Accordion>
+                  return (
+                    <Accordion key={index}>
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="panel1a-content"
+                        id="panel1a-header"
+                      >
+                        {item.icon}
+                        <Typography sx={{ marginLeft: "5px" }}>
+                          {item.name}
+                        </Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        {item.options.map((option, index) => {
+                          return (
+                            <div key={index}>
+                              <Divider />
+                              {option.name === "Logout" ? (
+                                <MenuItem
+                                  key={index}
+                                  style={{ color: "red" }}
+                                  onClick={() => {
+                                    auth.logout();
+                                    navigate(option.link);
+                                  }}
+                                >
+                                  <LogoutIcon />
+                                  {option.name}
+                                </MenuItem>
+                              ) : (
+                                <MenuItem
+                                  key={index}
+                                  onClick={() => {
+                                    setAnchorEl(null);
+                                    setMenuName(null);
+                                    navigate(option.link);
+                                  }}
+                                >
+                                  {option.name}
+                                </MenuItem>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </AccordionDetails>
+                    </Accordion>
                   );
                 })}
               </Drawer>

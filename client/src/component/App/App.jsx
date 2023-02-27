@@ -16,7 +16,7 @@ function App() {
         <Route path="/" element={<h1>Home</h1>} />
         <Route path="group" element={<h1>Group</h1>} />
         <Route path="presentation" element={<h1>Presentation</h1>} />
-        <Route path="user" element={<ProfilePageLayout />} exact>
+        <Route path="user" element={<ProfilePageLayout/>} exact>
           <Route path="" element={<Navigate to="profile" />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="edit" element={<EditProfilePage />} />

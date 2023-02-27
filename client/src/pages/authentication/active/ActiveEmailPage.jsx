@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import queryString from "query-string";
 import { useEffect } from "react";
-import { verifyEmail } from "../../api";
+import { verifyEmail } from "../../../api";
 import { useMutation } from "@tanstack/react-query";
 
 

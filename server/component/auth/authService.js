@@ -1,6 +1,6 @@
 const niv = require("../../public/Validator");
 const Validator = niv.Validator;
-const User = require("../../mongooseModel/User");
+const { User } = require("../../mongooseModel/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
@@ -64,14 +64,26 @@ exports.register = async (req, res) => {
       },
       tls: {
         rejectUnauthorized: false,
-        },
+      },
     });
 
     const mailOptions = {
       from: process.env.SERVER_EMAIL,
       to: userObject.email,
       subject: "Active your account",
-      html: `<h1>Click this link to active your account</h1><a 
+      html: `
+      <div
+        style="display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;"
+        >
+      <h1
+        style="text-align: center;
+        font-size: 30px;
+        font-weight: 600;"        
+      >Click this to active your account</h1>
+      <a 
       style="background-color: #4CAF50; /* Green */
         border: none;
         color: white;
@@ -80,7 +92,8 @@ exports.register = async (req, res) => {
         text-decoration: none;
         display: inline-block;
         font-size: 16px;"
-         href="http://localhost:3000/auth/active?code=${userObject._id}">Active</a>`,
+         href="http://localhost:3000/auth/active?code=${userObject._id}">Active</a>
+         </div>`,
     };
 
     transporter.sendMail(mailOptions, (err, info) => {

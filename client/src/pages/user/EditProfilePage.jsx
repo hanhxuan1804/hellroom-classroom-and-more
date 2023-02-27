@@ -1,20 +1,38 @@
-import { useAuth } from "../../context/auth-context";
 import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
-import { Box, Grid, Typography, TextField, Button } from "@mui/material";
+import { Box, Grid, Typography, TextField, Button, CircularProgress } from "@mui/material";
 import { CancelOutlined, Save } from "@mui/icons-material";
+import { updateProfile } from "../../api";
+import { useMutation } from "@tanstack/react-query";
+import { useSnackbar } from "notistack";
+import useLocalStorage from "../../hooks/useLocalStorage";
 
 const EditProfilePage = () => {
-  const { user } = useAuth();
+  const [user, setUser] = useLocalStorage("user", {});
   const navigate = useNavigate();
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const onSubmit = (data) => {
-    console.log(data);
-    };
+  const { enqueueSnackbar } = useSnackbar();
+  const mutation = useMutation(updateProfile);
+
+  const onSubmit = async (data) => {
+    const result = await mutation.mutateAsync(data);
+    if (result) {
+      const newUser = { ...user, ...data };
+      setUser(newUser);
+      enqueueSnackbar("Profile updated successfully", { variant: "success" });
+      navigate("/user/profile");
+    }
+    if (mutation.isError) {
+      enqueueSnackbar("Something went wrong. Please try again", {
+        variant: "error",
+      });
+    }
+  };
+
   return (
     <Grid item xs={12} sm={8}>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -113,7 +131,7 @@ const EditProfilePage = () => {
                 <Controller
                   name="birthDate"
                   control={control}
-                  defaultValue={user.birthDate}
+                  defaultValue={new Date(user.birthDate).toISOString().slice(0, 10)}
                   render={({ field }) => (
                     <TextField
                       {...field}
@@ -177,11 +195,15 @@ const EditProfilePage = () => {
           <Button
             type="submit"
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mt: 3, mb: 2, width: 100 }}
             startIcon={<Save />}
+            
             size="small"
           >
-            Update
+            {mutation.isLoading ? <CircularProgress
+              size={20}
+              color="inherit"
+            /> : "Save"}
           </Button>
         </Box>
       </form>

@@ -1,8 +1,9 @@
 import {Box, Grid, Typography } from '@mui/material';
-import { useAuth } from '../../context/auth-context';
+
+import  useLocalStorage  from '../../hooks/useLocalStorage';
 
 function ProfilePage() {
-  const user = useAuth().user;
+  const [user] = useLocalStorage('user', {});
   return (
     <Grid item xs={12} sm={8}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -32,7 +33,7 @@ function ProfilePage() {
                     <Typography variant="subtitle1" sx={{ mb: 1 }}>Date of Birth</Typography>
                   </Grid>
                   <Grid item xs={12} sm={8}>
-                    <Typography variant="body1">{user.birthDate}</Typography>
+                    <Typography variant="body1">{new Date(user.birthDate).toISOString().slice(0, 10)  }</Typography>
                   </Grid>
                 </Grid>
               </Box>
@@ -42,7 +43,7 @@ function ProfilePage() {
                     <Typography variant="subtitle1" sx={{ mb: 1 }}>Phone</Typography>
                   </Grid>
                   <Grid item xs={12} sm={8}>
-                    <Typography variant="body1">{user.phone}</Typography>
+                    <Typography variant="body1">{user.phoneNumber}</Typography>
                   </Grid>
                 </Grid>
               </Box>

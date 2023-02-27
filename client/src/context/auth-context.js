@@ -7,24 +7,25 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useLocalStorage('user', null);
 
     const login = (token, user) => {
-        window.localStorage.setItem('token', token);
         setToken(token);
-        window.localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
     };
 
     const logout = () => {
-        window.localStorage.removeItem('token');
         setToken(null);
-        window.localStorage.removeItem('user');
         setUser(null);
+    };
+
+    const getUser = () => {
+        return window.localStorage.getItem('user');
     };
     const isAuthenticated = () => {
         return token !== null; 
     };
 
     const value = useMemo(() => {
-        return { token, user , login, logout, isAuthenticated };
+        return { token, user , login, logout,
+            getUser, setUser,  isAuthenticated };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 

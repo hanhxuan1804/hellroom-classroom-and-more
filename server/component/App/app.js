@@ -2,14 +2,30 @@ require('dotenv').config();
 global.publicPath = __dirname + '../../public';
 const express = require('express');
 const bodyParser = require('body-parser');
+const passport = require('../passport');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const Grid = require('gridfs-stream');
+const fs = require('fs');
+
 mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true }).then(()=>{
-    console.log('Connected to database!');
+    exports.db = mongoose.connection;
+    console.log('Connection to database successful!');
 }).catch((err)=>{
     console.log('Connection to database failed!');
     console.log(err);
 });
+
+// // Init gfs
+// const conn = mongoose.connection;
+// let gfs;
+// conn.once('open', () => {
+//   gfs = Grid(conn.db, mongoose.mongo);
+//   gfs.collection('uploads');
+// });
+
+// exports.gfs = gfs;
+
 
 const app = express();
 // parse application/x-www-form-urlencoded
@@ -20,6 +36,9 @@ app.use(bodyParser.json());
 
 // Cors for cross origin allowance
 app.use(cors()); 
+
+// Passport middleware
+app.use(passport.initialize());
 
 require('./router')(app);
 

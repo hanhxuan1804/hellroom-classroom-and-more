@@ -13,7 +13,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import { Link, useNavigate , Navigate} from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
-import { login } from "../../api";
+import { login } from "../../../api";
 import { useAuth } from "../../../context/auth-context";
 
 import "./LoginPage.css";
