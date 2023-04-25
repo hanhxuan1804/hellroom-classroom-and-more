@@ -45,16 +45,16 @@ function Header(props) {
   const navbarItems = [
     {
       name: "Group",
-      link: "/group",
+      link: "/groups",
       icon: <Groups3 />,
       options: [
         {
           name: "Join Group",
-          link: "/group/join",
+          link: "/groups/join",
         },
         {
           name: "My Groups",
-          link: "/group/mygroups",
+          link: "/groups/mygroups",
         },
         {
           name: "Create Group",
@@ -88,7 +88,7 @@ function Header(props) {
         <Avatar
           alt="avatar"
           sx={{ width: 25, height: 25 }}
-          src={`${process.env.REACT_APP_API_URL}/user/avatar/${user?.avatar}`}
+          src={user?.avatar}
         />
       ),
       options: [

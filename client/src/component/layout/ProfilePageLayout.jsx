@@ -114,7 +114,7 @@ function ProfilePageLayout() {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
               <Box sx={{ display: "flex", justifyContent: "center" }}>
-                <Avatar src={isUpload ? avatar : `${process.env.REACT_APP_API_URL}/user/avatar/${user.avatar}`} sx={{ width: 100, height: 100 }}>
+                <Avatar src={isUpload ? avatar : user?.avatar} sx={{ width: 100, height: 100 }}>
                   {user.firstName.charAt(0)}
                 </Avatar>
               </Box>

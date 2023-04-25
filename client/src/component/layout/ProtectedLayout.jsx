@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth-context";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import Header from "../common/header";
+import { setAuthToken } from "../../api";
 
 const ProtectedLayout = (props) => {
   const navigate = useNavigate();
@@ -12,6 +13,10 @@ const ProtectedLayout = (props) => {
     if (!auth.token) {
       // console.log("No token found");
       navigate("/auth/login");
+    }
+    else {
+      // console.log("Token found");
+      setAuthToken(auth.token);
     }
   });
   return (

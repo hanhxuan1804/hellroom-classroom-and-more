@@ -5,6 +5,79 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_CLIENT_REDIRECT_URI
+);
+
+
+exports.googleLogin = async (req, res) => {
+  console.log(req.body);
+  const code = req.body.code;
+  if (!code) {
+    return res.status(400).json({
+      error: "Code is required",
+    });
+  }
+  try {
+    const response = await client.getToken(code);
+    const { tokens } = response;
+    const { id_token } = tokens;
+    const ticket = await client.verifyIdToken({
+      idToken: id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const { email_verified, email, given_name, family_name, picture } = ticket.getPayload();
+    if (email_verified) {
+        const user = await User.findOne({ email });
+        if (user) {
+          const token = jwt.sign({ user: user }, process.env.JWT_SECRET, {
+            expiresIn: "7d",
+          });
+          user.password = undefined;
+          user.active = undefined;
+          user.__v = undefined;
+
+          return res.status(200).json({
+            token,
+            user: user,
+          });
+        }
+        const password = email + process.env.JWT_SECRET;
+        const newUser = new User({
+          _id: new mongoose.Types.ObjectId(),
+          email,
+          password,
+          firstName: family_name,
+          lastName: given_name,
+          avatar: picture,
+          active: true,
+        });
+        await newUser.save();
+        const token = jwt.sign({ user: newUser }, process.env.JWT_SECRET, {
+          expiresIn: "7d",
+        });
+        newUser.password = undefined;
+        newUser.active = undefined;
+        newUser.__v = undefined;
+        return res.status(200).json({
+          token,
+          user: newUser,
+        });
+
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({
+      error: "Google login failed. Try again",
+    });
+  }
+
+
+    
+};
 
 exports.verify = async (req, res) => {
   const v = new Validator(req.body, {
@@ -49,6 +122,7 @@ exports.register = async (req, res) => {
     const userObject = new User({
       _id: new mongoose.Types.ObjectId(),
       email: req.body.email,
+      active: true,
       password: req.body.password,
       firstName: req.body.firstName,
       lastName: req.body.lastName,

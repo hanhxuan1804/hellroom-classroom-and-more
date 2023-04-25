@@ -1,7 +1,6 @@
 import axios from "axios";
-const token = window.localStorage.getItem("token").toString();
-const authorization = `Bearer ${token.slice(1, -1)}`;
-token && (axios.defaults.headers.common["Authorization"] = authorization);
+
+
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
@@ -9,10 +8,19 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+export const setAuthToken = (token) => {
+  if (token) {
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common["Authorization"];
+  }
+};
 
 export const login = (payload) => api.post(`/auth/login`, payload);
 export const register = (payload) => api.post(`/auth/register`, payload);
 export const verifyEmail = (payload) => api.post(`/auth/verify-email`, payload);
+export const googleLogin = (payload) => api.post(`/auth/google-login`, payload);
+
 export const resendVerificationEmail = (payload) =>
   api.post(`/resend-verification-email`, payload);
 export const updateProfile = (payload) => api.put(`/user/update`, payload);
@@ -24,7 +32,28 @@ export const uploadAvatar = (payload) => {
   });
 };
 
-export const getUser = () => api.get(`/user`);
+export const getGroups = () => api.get(`/group`);
+export const getGroup = (payload) => api.get(`/group/${payload}`);
+export const createGroup = (payload) => api.post(`/group/create`, payload);
+export const updateGroup = (payload) => api.put(`/group/update`, payload);
+export const deleteGroup = (payload) => api.delete(`/group/delete`, payload);
+
+export const getGroupMembers = (payload) =>
+  api.get(`/group-members/${payload}`);
+export const addGroupMember = (payload) =>
+  api.post(`/group-member/add`, payload);
+export const removeGroupMember = (payload) =>
+  api.delete(`/group-member/remove`, payload);
+
+export const getGroupPosts = (payload) => api.get(`/group-posts/${payload}`);
+export const createGroupPost = (payload) =>
+  api.post(`/group-post/create`, payload);
+export const updateGroupPost = (payload) =>
+  api.put(`/group-post/update`, payload);
+export const deleteGroupPost = (payload) =>
+  api.delete(`/group-post/delete`, payload);
+
+export const getUser = (payload) => api.get(`/user/get-user`, payload);
 export const logout = () => api.get(`/logout`);
 export const getProfile = () => api.get(`/profile`);
 export const updatePassword = (payload) => api.put(`/update-password`, payload);

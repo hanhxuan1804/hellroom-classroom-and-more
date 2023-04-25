@@ -8,12 +8,16 @@ import {
   InputAdornment,
   IconButton,
   CircularProgress,
+  Typography,
+  Box,
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Google, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
-import { Link, useNavigate , Navigate} from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
-import { login } from "../../../api";
+import { useGoogleLogin } from "@react-oauth/google";
+
+import { login, googleLogin } from "../../../api";
 import { useAuth } from "../../../context/auth-context";
 
 import "./LoginPage.css";
@@ -35,11 +39,14 @@ function LoginPage() {
   } = useForm();
   const { enqueueSnackbar } = useSnackbar();
   const mutation = useMutation(login, {
-   onSuccess: (data) => {
-     const result = data.data;
-     result.user.role === "admin" ? Auth.login(result.token, result.user) && navigate("/admin") :
-      result.user.active ? Auth.login(result.token, result.user) && navigate("/") : navigate("/auth/active");
-   },
+    onSuccess: (data) => {
+      const result = data.data;
+      result.user.role === "admin"
+        ? Auth.login(result.token, result.user) && navigate("/admin")
+        : result.user.active
+        ? Auth.login(result.token, result.user) && navigate("/")
+        : navigate("/auth/active");
+    },
     onError: (error) => {
       if (error.response) {
         const { data } = error.response;
@@ -63,6 +70,36 @@ function LoginPage() {
   const onSubmit = async (data) => {
     mutation.mutate(data);
   };
+
+  const googleMutatuion = useMutation(googleLogin, {
+    onSuccess: (data) => {
+      const result = data.data;
+      if (result) {
+        Auth.login(result.token, result.user) && navigate("/");
+      }
+    },
+    onError: (error) => {
+      if (error.response) {
+        const { data } = error.response;
+        setError("all", {
+          type: "manual",
+          rule: "wrong",
+          message: data.message,
+        });
+      } else {
+        const message = `Login failed. ${error.message}`;
+        enqueueSnackbar(message, { variant: "error" });
+      }
+    },
+  });
+  const handleGoogleButtonClick = useGoogleLogin({
+    onSuccess: (codeResponse) => googleMutatuion.mutate(codeResponse),
+    accessType: "offline",
+    scope: "openid",
+    flow: 'auth-code',
+    onFailure: (error) => enqueueSnackbar(error.message, { variant: "error" }),
+  });
+
   if (Auth.isAuthenticated()) {
     return <Navigate to="/" />;
   }
@@ -169,6 +206,37 @@ function LoginPage() {
           sx={{ color: "#fff00", zIndex: (theme) => theme.zIndex.drawer + 1 }}
           open={mutation.isLoading}
         /> */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
+          <Typography
+            variant="body2"
+            sx={{ fontStyle: "italic", fontWeight: "bold", color: "grey.500" }}
+          >
+            Or
+          </Typography>
+          <div style={{ width: "100%" }}>
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={handleGoogleButtonClick}
+              style={{
+                background: "black",
+                color: "white",
+                borderRadius: "3px",
+              }}
+              startIcon={<Google />}
+            >
+              Login with Google
+            </Button>
+            
+          </div>
+        </Box>
       </form>
     </div>
   );

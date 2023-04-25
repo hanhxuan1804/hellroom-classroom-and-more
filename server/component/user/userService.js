@@ -48,7 +48,7 @@ exports.uploadAvatar = (req, res) => {
     },
     {
       $set: {
-        avatar: req.file.id,
+        avatar: `${process.env.API_URL}/user/avatar/${req.file.id}`
       },
     },
     function (err, result) {
@@ -58,7 +58,7 @@ exports.uploadAvatar = (req, res) => {
         });
       } else {
         res.status(200).send({
-          avatar: req.file.id,
+          avatar: `${process.env.API_URL}/user/avatar/${req.file.id}`
         });
       }
     }
