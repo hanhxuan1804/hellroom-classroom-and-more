@@ -1,7 +1,5 @@
-import React, { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { getGroups } from "../../api";
+import { useState } from "react";
 import {
   Box,
   Card,
@@ -10,10 +8,9 @@ import {
   Container,
   Typography,
   Avatar,
-  Button,
-  Input,
+    Input,
 } from "@mui/material";
-import useLocalStorage from "../../hooks/useLocalStorage";
+//import useLocalStorage from "../../hooks/useLocalStorage";
 
 const GroupsDataTemplate = [
   {
@@ -95,8 +92,8 @@ const GroupsDataTemplate = [
 
 const GroupListPage = () => {
   const navigate = useNavigate();
-  const [GroupsData, setGroupsData] = React.useState(GroupsDataTemplate);
-  const { user, setUser } = useLocalStorage("user", null);
+  const [GroupsData, setGroupsData] = useState(GroupsDataTemplate);
+ // const { user, setUser } = useLocalStorage("user", null);
   // const { data, isLoading, error, refetch } = useQuery('groups', getGroups);
 
   // useEffect(() => {

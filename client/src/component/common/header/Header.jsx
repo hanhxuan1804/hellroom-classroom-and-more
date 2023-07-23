@@ -58,7 +58,7 @@ function Header(props) {
         },
         {
           name: "Create Group",
-          link: "/group/create",
+          link: "/groups/create",
         },
       ],
     },
