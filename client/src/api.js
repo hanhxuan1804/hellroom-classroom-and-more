@@ -32,7 +32,7 @@ export const uploadAvatar = (payload) => {
   });
 };
 
-export const getGroups = () => api.get(`/group`);
+export const getGroups = (payload) => api.get(`/group`, payload);
 export const getGroup = (payload) => api.get(`/group/${payload}`);
 export const createGroup = (payload) => api.post(`/group/create`, payload);
 export const updateGroup = (payload) => api.put(`/group/update`, payload);
@@ -53,7 +53,7 @@ export const updateGroupPost = (payload) =>
 export const deleteGroupPost = (payload) =>
   api.delete(`/group-post/delete`, payload);
 
-export const getUser = (payload) => api.get(`/user/get-user`, payload);
+export const getUser = (payload) => api.get(`/user/get-user/${payload}`);
 export const logout = () => api.get(`/logout`);
 export const getProfile = () => api.get(`/profile`);
 export const updatePassword = (payload) => api.put(`/update-password`, payload);
@@ -61,5 +61,15 @@ export const forgotPassword = (payload) =>
   api.post(`/forgot-password`, payload);
 export const resetPassword = (payload) => api.post(`/reset-password`, payload);
 export const getAllPosts = () => api.get(`/posts`);
+
+export const getPresentations = (payload) => api.get(`/presentation`, payload);
+export const getPresentation = (payload) =>
+  api.get(`/presentation/${payload}`);
+export const createPresentation = (payload) =>
+  api.post(`/presentation/create`, payload);
+export const updatePresentation = (payload) =>
+  api.put(`/presentation/update`, payload);
+export const deletePresentation = (payload) =>
+  api.delete(`/presentation/delete`, payload);
 
 export default api;

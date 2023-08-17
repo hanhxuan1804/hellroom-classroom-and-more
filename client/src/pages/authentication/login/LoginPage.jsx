@@ -18,14 +18,28 @@ import { useMutation } from "@tanstack/react-query";
 import { useGoogleLogin } from "@react-oauth/google";
 
 import { login, googleLogin } from "../../../api";
-import { useAuth } from "../../../context/auth-context";
+import { useDispatch, useSelector } from "react-redux";
+import { authS } from "../../../redux/selector";
+import { loginRequest, loginSuccess, loginFailure } from "../../../redux/slice/authSlice";
+import useLocalStorage from "../../../hooks/useLocalStorage";
 
 import "./LoginPage.css";
 
 function LoginPage() {
-  const Auth = useAuth();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const authSelector = useSelector(authS);
   const [showPassword, setShowPassword] = useState(false);
+  //eslint-disable-next-line
+  const [auth , setAuth] = useLocalStorage("auth", {})
+  const setAuthLocal = (data)=>{
+    setAuth(
+      {
+        isAuthenticated: true,
+        data: data
+      }
+    )
+  }
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -42,12 +56,13 @@ function LoginPage() {
     onSuccess: (data) => {
       const result = data.data;
       result.user.role === "admin"
-        ? Auth.login(result.token, result.user) && navigate("/admin")
+        ? dispatch(loginSuccess(result)) && setAuthLocal(result) && navigate("/admin")
         : result.user.active
-        ? Auth.login(result.token, result.user) && navigate("/")
+        ? dispatch(loginSuccess(result)) && setAuthLocal(result) && navigate("/")
         : navigate("/auth/active");
     },
     onError: (error) => {
+      dispatch(loginFailure());
       if (error.response) {
         const { data } = error.response;
         setError("all", {
@@ -68,6 +83,7 @@ function LoginPage() {
   }, [watchEmail, watchPassword, clearErrors]);
 
   const onSubmit = async (data) => {
+    dispatch(loginRequest());
     mutation.mutate(data);
   };
 
@@ -75,10 +91,12 @@ function LoginPage() {
     onSuccess: (data) => {
       const result = data.data;
       if (result) {
-        Auth.login(result.token, result.user) && navigate("/");
+        setAuthLocal(result)
+        dispatch(loginSuccess(result)) && navigate("/");
       }
     },
     onError: (error) => {
+      dispatch(loginFailure());
       if (error.response) {
         const { data } = error.response;
         setError("all", {
@@ -100,7 +118,7 @@ function LoginPage() {
     onFailure: (error) => enqueueSnackbar(error.message, { variant: "error" }),
   });
 
-  if (Auth.isAuthenticated()) {
+  if (authSelector.isAuthenticated) {
     return <Navigate to="/" />;
   }
   return (

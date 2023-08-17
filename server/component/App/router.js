@@ -1,6 +1,8 @@
 const authRoute = require('../auth/router');
 const userRoute = require('../user/router');
 const groupRoute = require('../group/router');
+const groupPost = require('../groupPost/router');
+const authMiddleware = require('../auth/middleware');
 
 module.exports =(app)=>{
     app.get('/',(req,res)=>{
@@ -8,5 +10,6 @@ module.exports =(app)=>{
     });
     app.use('/api/auth', authRoute);
     app.use('/api/user', userRoute);
-    app.use('/api/group', groupRoute);
+    app.use('/api/group', authMiddleware ,  groupRoute);
+    app.use('/api/group-posts', authMiddleware ,  groupPost);
 }

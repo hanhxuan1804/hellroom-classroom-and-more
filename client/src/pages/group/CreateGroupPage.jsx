@@ -6,10 +6,18 @@ import {
   OutlinedInput,
   FormHelperText,
   Typography,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/auth-context";
+import { useSelector } from "react-redux";
+import { authS } from "../../redux/selector";
+import { useMutation } from "@tanstack/react-query";
+import { useSnackbar } from "notistack";
+import { createGroup } from "../../api";
+import { addGroup } from "../../redux/slice/groupSlice";
+import { useDispatch } from "react-redux";
 
 const style = {
   position: "absolute",
@@ -32,13 +40,30 @@ const style = {
 
 function CreateGroupPage() {
   const navigate = useNavigate();
-  const user = useAuth().user;
+  const user = useSelector(authS).user;
   const [open, setOpen] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [groupDescription, setGroupDescription] = useState(
-    `This is ${user.name}'s group`
+    `This is ${user.lastName}'s group`
   );
   const [firstSubmit, setFirstSubmit] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
+  const dispatch = useDispatch();
+  const mutation = useMutation(createGroup, {
+    onSuccess: (data) => {
+      let group = data.data.group;
+      group.ownerData = user;
+      dispatch(addGroup(group));
+      navigate(`/groups/${data.data.group._id}`);
+      setOpen(false);
+    },
+    onError: (error) => {
+      if (error.response) {
+        const { data } = error.response;
+        enqueueSnackbar(JSON.stringify(data), { variant: "error" });
+      }
+    },
+  });
 
   const handleOpen = () => {
     setOpen(true);
@@ -61,10 +86,14 @@ function CreateGroupPage() {
     setFirstSubmit(true);
     if (groupName === "") return;
     // Xử lý việc tạo nhóm mới
-    
-    console.log(`Đã tạo nhóm ${groupName} với mô tả ${groupDescription}`);
-    // Sau khi tạo xong, đóng Modal
-    handleClose();
+    const newGroup = {
+      name: groupName,
+      description: groupDescription,
+      members: [user._id],
+      owner: user._id,
+      coowner: [],
+    };
+    mutation.mutate(newGroup);
   };
 
   return (
@@ -74,7 +103,7 @@ function CreateGroupPage() {
       aria-labelledby="simple-modal-title"
       aria-describedby="simple-modal-description"
     >
-      <Box sx={{ ...style}}>
+      <Box sx={{ ...style }}>
         <h2 id="simple-modal-title">Create new group</h2>
         <form
           onSubmit={handleSubmit}
@@ -110,7 +139,9 @@ function CreateGroupPage() {
                 onChange={(event) => setGroupName(event.target.value)}
               />
               <FormHelperText error={groupName === "" && firstSubmit}>
-                {groupName === "" && firstSubmit? "*Group name is required" : ""}
+                {groupName === "" && firstSubmit
+                  ? "*Group name is required"
+                  : ""}
               </FormHelperText>
             </FormControl>
           </div>
@@ -191,6 +222,9 @@ function CreateGroupPage() {
             </Button>
           </div>
         </form>
+        <Backdrop open={mutation.isLoading}>
+          <CircularProgress color="inherit" />
+        </Backdrop>
       </Box>
     </Modal>
   );

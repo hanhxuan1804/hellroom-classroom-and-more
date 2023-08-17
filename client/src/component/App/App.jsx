@@ -5,8 +5,16 @@ import { ProfilePageLayout, ProtectedLayout } from "../layout";
 import { ProfilePage, EditProfilePage } from "../../pages/user";
 import { GroupListPage, GroupDetailsPage, CreateGroupPage, JoinGroupPage  } from "../../pages/group";
 import { CreatePresentationPage, EditPresentationPage } from "../../pages/presentation";
+import useLocalStorage from "../../hooks/useLocalStorage";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../../redux/slice/authSlice";
 
 function App() {
+  const dispatch = useDispatch();
+  const [auth]= useLocalStorage("auth", null)
+  if (auth){
+    dispatch(loginSuccess(auth.data))
+  }
   return (
     <Routes>
       <Route path="auth" element={<Outlet />}>

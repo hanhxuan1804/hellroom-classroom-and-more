@@ -1,9 +1,9 @@
 import {Box, Grid, Typography } from '@mui/material';
-
-import  useLocalStorage  from '../../hooks/useLocalStorage';
+import { useSelector } from 'react-redux';
+import { authS } from '../../redux/selector';
 
 function ProfilePage() {
-  const [user] = useLocalStorage('user', {});
+  const user = useSelector(authS).user;
   return (
     <Grid item xs={12} sm={8}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>

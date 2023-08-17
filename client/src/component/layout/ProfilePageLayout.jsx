@@ -12,17 +12,21 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { Outlet, useNavigate, useLocation, useOutletContext } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Edit, EditOff } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { uploadAvatar } from "../../api";
 import { useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
+import { useSelector, useDispatch } from "react-redux";
+import { authS } from "../../redux/selector";
+import { updateProfileSuccess, updateProfileRequest, updateProfileFailure } from "../../redux/slice/authSlice";
 
 
 function ProfilePageLayout() {
-  const {user , setUser} = useOutletContext();
+  const user = useSelector(authS).user;
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isEidt, setIsEdit] = useState(false);
   const location = useLocation();
   useEffect(() => {
@@ -47,11 +51,13 @@ function ProfilePageLayout() {
   const mutation = useMutation(uploadAvatar);
   const { enqueueSnackbar } = useSnackbar();
   const handleUploadAvatar = async () => {
+    dispatch(updateProfileRequest());
     const formData = new FormData();
     formData.append("avatar", file);
     const result = await mutation.mutateAsync(formData);
     if (result.status === 200) {
-      setUser({ ...user, avatar: result.data.avatar });
+      const newUser = { ...user, avatar: result.data.avatar };
+      dispatch(updateProfileSuccess(newUser));
       enqueueSnackbar("Upload avatar successfully", {
         variant: "success",
       });
@@ -60,6 +66,7 @@ function ProfilePageLayout() {
       
     }
     else{
+      dispatch(updateProfileFailure());
       enqueueSnackbar(result.data, {
         variant: "error",
       });

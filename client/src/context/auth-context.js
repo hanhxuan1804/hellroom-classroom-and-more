@@ -1,33 +1,35 @@
+// this file no longer used
 import {createContext, useMemo, useContext } from 'react';
-import useLocalStorage from '../hooks/useLocalStorage';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginSuccess } from '../redux/slice/authSlice';
+import {authS} from '../redux/selector';
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [token, setToken] = useLocalStorage('token', null);
-    const [user, setUser] = useLocalStorage('user', null);
+    const dispatch = useDispatch();
+    const auth = useSelector(authS);
 
-    const login = (token, user) => {
-        setToken(token);
-        setUser(user);
+    const login = (data) => {
+        dispatch(loginSuccess(data));
     };
 
     const logout = () => {
-        setToken(null);
-        setUser(null);
+        dispatch(logout());
     };
 
     const getUser = () => {
-        return window.localStorage.getItem('user');
+        return auth.user;
     };
     const isAuthenticated = () => {
-        return token !== null; 
+        return auth.isAuthenticated;
     };
 
     const value = useMemo(() => {
-        return { token, user , login, logout,
-            getUser, setUser,  isAuthenticated };
+        return { login, logout,
+            getUser, isAuthenticated };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [token]);
+    }, []);
 
 
     return (

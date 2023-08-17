@@ -79,3 +79,31 @@ exports.getAvatar = async (req, res) => {
     });
   }
 };
+
+exports.getUser = async (req, res) => {
+  const userId = req.params.userId;
+  User.findOne(
+    {
+      _id: userId,
+    },
+    function (err, user) {
+      if (err) {
+        res.status(500).send({
+          message: "Error retrieving user",
+        });
+      } else {
+        const userProtected = {...user._doc};
+        delete userProtected.password;
+        delete userProtected.emailVerified;
+        delete userProtected.emailVerificationToken;
+        delete userProtected.emailVerificationTokenExpiresAt;
+        delete userProtected.passwordResetToken;
+        delete userProtected.passwordResetTokenExpiresAt;
+        delete userProtected.createdAt;
+        delete userProtected.updatedAt;
+        delete userProtected.__v;
+        res.send(userProtected);
+      }
+    }
+  );
+}

@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   Container,
+  Dialog,
   Grid,
   IconButton,
   Paper,
@@ -15,85 +16,44 @@ import TextEditor from "../../component/groups/TextEditor";
 import { useState } from "react";
 import { FileIcon, defaultStyles } from "react-file-icon";
 import GroupEdit from "../../component/groups/GroupEdit";
+import { getGroupPosts, createGroupPost } from "../../api";
+import { useSelector } from "react-redux";
+import { authS, groupsS } from "../../redux/selector";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 const getFileExtension = (filename) => {
   if (!filename) return "png";
   return filename.slice(((filename.lastIndexOf(".") - 1) >>> 0) + 2);
 };
 
-const SamplePostData = [
-  {
-    id: 1,
-    title: "Post 1",
-    content: "This is post 1",
-  },
-  {
-    id: 2,
-    title: "Post 2",
-    content: "This is post 2",
-    file: "https://source.unsplash.com/random",
-  },
-  {
-    id: 3,
-    title: "Post 3",
-    content: "This is post 3",
-  },
-  {
-    id: 4,
-    title: "Post 4",
-    content: "This is post 4",
-    file: "https://source.unsplash.com/random",
-  },
-  {
-    id: 5,
-    title: "Post 5",
-    content: "This is post 5",
-    file: "https://source.unsplash.com/random",
-  },
-];
-
 const GroupDetailsPage = () => {
   const { groupId } = useParams();
-  const GroupData = {
-    id: groupId,
-    name: "Group 1",
-    owner: "User 1",
-    description: "This is a group",
-    members: ["User 1", "User 2", "User 3"],
-    background: "https://source.unsplash.com/random",
-  };
+  const groups = useSelector(groupsS).groups;
+  const groupData = groups.find((group) => group._id === groupId);
+  const [showCode, setShowCode] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const [isPost, setIsPost] = useState(false);
-  const [posts, setPosts] = useState(SamplePostData);
   const [isEditOpen, setIsEditOpen] = useState(false);
-
+  const user = useSelector(authS).user;
+  const postQuery = useQuery(["group", groupId, "posts"], async () => {
+    const result = await getGroupPosts(groupId);
+    return result;
+  });
+  const postMutation = useMutation((post) => {
+    return createGroupPost(groupId, post);
+  });
   const handlePost = (post) => {
-    setPosts([post, ...posts]);
+    postMutation.mutate(post);
     setIsPost(false);
   };
-  //   const [group, setGroup] = useState(null);
-  //   const [loading, setLoading] = useState(true);
-  //   const [error, setError] = useState(null);
 
-  //   useEffect(() => {
-  //     const getGroup = async () => {
-  //       try {
-  //         const { data } = await axios.get(`/api/groups/${id}`);
-  //         setGroup(data);
-  //       } catch (error) {
-  //         setError(error);
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     };
-  //     getGroup();
-  //   }, [id]);
-
-  //   if (loading) return <Loading />;
-  //   if (error) return <Error error={error} />;
   const hanhdleEdit = () => {
     setIsEditOpen(true);
   };
-
+  if (!groupData) return <div>Group not found</div>;
+  const isMember = groupData.members?.includes(user._id);
+  if (!isMember) return <div>Not a member</div>;
+  const inviteLink = `${window.location.origin}/groups/join/${groupData.code}`;
   return (
     <Container maxWidth="md">
       <Paper
@@ -101,7 +61,7 @@ const GroupDetailsPage = () => {
         sx={{
           mt: 4,
           height: 200,
-          background: `url(${GroupData.background})`,
+          background: `url(${groupData.background})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -126,14 +86,14 @@ const GroupDetailsPage = () => {
         <GroupEdit
           open={isEditOpen}
           handleClose={() => setIsEditOpen(false)}
-          groupData={GroupData}
+          groupData={groupData}
         />
         <Typography
           variant="h3"
           sx={{ color: "white", mb: 2, ml: 2 }}
           fontWeight="bold"
         >
-          {GroupData.name}
+          {groupData.name}
         </Typography>
       </Paper>
       <Grid container spacing={2} sx={{ mt: 2 }}>
@@ -151,9 +111,15 @@ const GroupDetailsPage = () => {
               }}
             >
               <Typography fontSize={16} fontWeight={"bold"} color={"#3367d5"}>
-                {GroupData.id}
+                {groupData.code}
               </Typography>
-              <IconButton size="small" color="primary">
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={() => {
+                  setShowCode(true);
+                }}
+              >
                 <Fullscreen />
               </IconButton>
             </div>
@@ -168,7 +134,7 @@ const GroupDetailsPage = () => {
                 },
               }}
               onClick={() => {
-                alert("Generate QR");
+                setShowQR(true);
               }}
             >
               Generate QR
@@ -198,7 +164,7 @@ const GroupDetailsPage = () => {
             >
               <Avatar
                 sx={{ width: 40, height: 40, ml: 2, mt: 1, mb: 1 }}
-                src="https://source.unsplash.com/random"
+                src={user.avatar}
               />
 
               <Typography
@@ -214,7 +180,7 @@ const GroupDetailsPage = () => {
               </Typography>
             </Card>
           )}
-          {posts.map((post) => (
+          {postQuery.data?.data.groupPost?.map((post) => (
             <Card
               sx={{
                 mt: 2,
@@ -264,6 +230,74 @@ const GroupDetailsPage = () => {
           ))}
         </Grid>
       </Grid>
+      <Dialog
+        open={showCode}
+        onClose={() => setShowCode(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <Paper sx={{ p: 2 }}>
+          <Typography
+            fontSize={54}
+            color={"#3367d5"}
+            fontWeight="bold"
+            align="center"
+            justifyItems={"center"}
+          >
+            {groupData.code}
+          </Typography>
+        </Paper>
+      </Dialog>
+      <Dialog
+        open={showQR}
+        onClose={() => setShowQR(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <Paper
+          sx={{
+            p: 6,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Typography fontSize={14} fontStyle={"italic"} mb={2}>
+            Scan to join group
+          </Typography>
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${inviteLink}`}
+            alt="qr"
+          />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Typography
+              fontSize={14}
+              fontWeight={"bold"}
+              color={"#3367d5"}
+              mt={2}
+            >
+              {groupData.name + ' : '} 
+            </Typography>
+            <Typography
+              fontSize={20}
+              fontWeight={"bold"}
+              color={"#3367d5"}
+              mt={2}
+              pl={2}
+            >
+              {groupData.code}
+            </Typography>
+          </div>
+        </Paper>
+      </Dialog>
     </Container>
   );
 };

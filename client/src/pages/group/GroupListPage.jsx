@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -8,135 +8,108 @@ import {
   Container,
   Typography,
   Avatar,
-    Input,
+  Input,
+  Grid,
 } from "@mui/material";
-//import useLocalStorage from "../../hooks/useLocalStorage";
-
-const GroupsDataTemplate = [
-  {
-    id: 1,
-    name: "Group 1",
-    owner: "User 1",
-  },
-  {
-    id: 2,
-    name: "Group 2",
-    owner: "User 2",
-  },
-  {
-    id: 3,
-    name: "Group 3",
-    owner: "User 3",
-  },
-  {
-    id: 4,
-    name: "Group 1",
-    owner: "User 1",
-  },
-  {
-    id: 5,
-    name: "Group 2",
-    owner: "User 2",
-  },
-  {
-    id: 6,
-    name: "Group 3",
-    owner: "User 3",
-  },
-  {
-    id: 7,
-    name: "Group 1",
-    owner: "User 1",
-  },
-  {
-    id: 8,
-    name: "Group 2",
-    owner: "User 2",
-  },
-  {
-    id: 9,
-    name: "Group 3",
-    owner: "User 3",
-  },
-  {
-    id: 10,
-    name: "Group 1",
-    owner: "User 1",
-  },
-  {
-    id: 11,
-    name: "Group 2",
-    owner: "User 2",
-  },
-  {
-    id: 12,
-    name: "Group 3",
-    owner: "User 3",
-  },
-  {
-    id: 13,
-    name: "Group 1",
-    owner: "User 1",
-  },
-  {
-    id: 14,
-    name: "Group 2",
-    owner: "User 2",
-  },
-  {
-    id: 15,
-    name: "Group 3",
-    owner: "User 3",
-  },
-];
+import { useDispatch, useSelector } from "react-redux";
+import { useQuery } from "@tanstack/react-query";
+import { getGroups, getUser } from "../../api";
+import { authS, groupsS } from "../../redux/selector";
+import ErrorPage from "../common/ErrorPage";
+import LoadingPage from "../common/LoadingPage";
+import { setGroups } from "../../redux/slice/groupSlice";
 
 const GroupListPage = () => {
   const navigate = useNavigate();
-  const [GroupsData, setGroupsData] = useState(GroupsDataTemplate);
- // const { user, setUser } = useLocalStorage("user", null);
-  // const { data, isLoading, error, refetch } = useQuery('groups', getGroups);
+  const user = useSelector(authS).user;
+  const groups = useSelector(groupsS).groups;
+  const [GroupsData, setGroupsData] = useState(groups);
+  const [GroupsShow, setGroupsShow] = useState(groups);
+  const { isLoading, error, data } = useQuery({
+    queryKey: ["groups", user._id],
+    queryFn: () => getGroups(user._id),
+  });
+  const dispatch = useDispatch();
+  useEffect(() => {
+    if (data) {
+      const fetchOwnerData = async () => {
+        const changedGroups = data.data.groups.filter((group) => {
+          const isExist = groups.find((g) => g._id === group._id);
+          return !isExist;
+        });
 
-  // useEffect(() => {
-  //     refetch();
-  // }, [refetch]);
+        const updatedGroups = await Promise.all(
+          changedGroups.map(async (group) => {
+            const owner = await getUser(group.owner);
+            return {
+              ...group,
+              ownerData: owner.data,
+            };
+          })
+        );
 
-  // if (isLoading) return <div>Loading...</div>;
-  // if (error) return <div>Error: {error.message}</div>;
+        setGroupsData([...GroupsData, ...updatedGroups]);
+        setGroupsShow([...GroupsData, ...updatedGroups]);
+        dispatch(setGroups([...GroupsData, ...updatedGroups]));
+      };
 
+      fetchOwnerData();
+    }
+    // eslint-disable-next-line
+  }, [data]);
+
+  if (error) {
+    return <ErrorPage error={error} />;
+  }
+
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+  console.log(GroupsShow);
   return (
     <Container>
-      <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-        <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
-          Groups
-        </Typography>
-        
-        <Box sx={{ flexGrow: 1 }} />
-        <Typography fontStyle={"italic"} sx={{ mt: 2, mb: 2 }}>
+      <Grid container alignItems="center" justifyContent="space-between">
+        <Grid item xs={12} md={6}>
+          <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
+            Groups
+          </Typography>
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          md={6}
+          display="flex"
+          flexDirection="row"
+          justifyContent="flex-end"
+          alignItems="center"
+        >
+          <Typography fontStyle={"italic"} sx={{ mt: 2, mb: 2 }}>
             Search
-        </Typography>
-        <Input
-          placeholder="Group Name"
-          sx={{ ml: 2, mt: 2, mb: 2 }}
-          onChange={(e) => {
-            let data = GroupsDataTemplate.filter((group) =>
-                group.name.toLowerCase().includes(e.target.value.toLowerCase())
-            );
-            setGroupsData(data);
-          }}
-        />
-      </Box>
+          </Typography>
+          <Input
+            placeholder="Group Name"
+            sx={{ ml: 2, mt: 2, mb: 2 }}
+            onChange={(e) => {
+              setGroupsShow(
+                GroupsData.filter((group) =>
+                  group.name
+                    .toLowerCase()
+                    .includes(e.target.value.toLowerCase())
+                )
+              );
+            }}
+          />
+        </Grid>
+      </Grid>
       <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          flexWrap: "wrap",
-          justifyContent: "flex-start",
-          alignItems: "center",
-        }}
+        display="flex"
+        flexWrap="wrap"
+        justifyContent="flex-start"
+        alignItems="center"
       >
-        {GroupsData.map((group) => (
+        {GroupsShow.map((group) => (
           <Card
-            key={group.id}
+            key={group._id}
             sx={{
               maxWidth: 250,
               minWidth: 250,
@@ -153,13 +126,13 @@ const GroupListPage = () => {
               },
             }}
             onClick={() => {
-              navigate(`/groups/${group.id}`);
+              navigate(`/groups/${group._id}`);
             }}
           >
             <CardMedia
               component="img"
               height="140"
-              image="https://source.unsplash.com/random"
+              image={group.background}
               alt="random"
             />
             <CardContent>
@@ -174,10 +147,15 @@ const GroupListPage = () => {
                   alignItems: "center",
                 }}
               >
-                <Typography variant="body2" color="text.secondary">
-                  {group.owner}
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  fontStyle={"italic"}
+                  fontWeight={"bold"}
+                >
+                  {group.description}
                 </Typography>
-                <Avatar alt="avatar" src="https://source.unsplash.com/random" />
+                <Avatar alt="avatar" src={group.ownerData.avatar} />
               </Box>
             </CardContent>
           </Card>

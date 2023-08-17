@@ -5,10 +5,13 @@ import { CancelOutlined, Save } from "@mui/icons-material";
 import { updateProfile } from "../../api";
 import { useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
-import useLocalStorage from "../../hooks/useLocalStorage";
+import { useSelector, useDispatch } from "react-redux";
+import { authS } from "../../redux/selector";
+import { updateProfileSuccess, updateProfileRequest, updateProfileFailure } from "../../redux/slice/authSlice";
 
 const EditProfilePage = () => {
-  const [user, setUser] = useLocalStorage("user", {});
+  const dispatch = useDispatch();
+  const user = useSelector(authS).user;
   const navigate = useNavigate();
   const {
     control,
@@ -19,14 +22,16 @@ const EditProfilePage = () => {
   const mutation = useMutation(updateProfile);
 
   const onSubmit = async (data) => {
+    dispatch(updateProfileRequest())
     const result = await mutation.mutateAsync(data);
     if (result) {
       const newUser = { ...user, ...data };
-      setUser(newUser);
+      dispatch(updateProfileSuccess(newUser));
       enqueueSnackbar("Profile updated successfully", { variant: "success" });
       navigate("/user/profile");
     }
     if (mutation.isError) {
+      dispatch(updateProfileFailure());
       enqueueSnackbar("Something went wrong. Please try again", {
         variant: "error",
       });

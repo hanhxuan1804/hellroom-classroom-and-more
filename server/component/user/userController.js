@@ -6,5 +6,6 @@ const { upload } = require('../../mongooseModel/User');
 router.put('/update', passport.authenticate('jwt', { session: false }), user.updateProfile);
 router.post('/upload-avatar', passport.authenticate('jwt', { session: false }), upload , user.uploadAvatar);
 router.get('/avatar/:id', user.getAvatar);
+router.get('/get-user/:userId', passport.authenticate('jwt', { session: false }), user.getUser);
 
 module.exports = router;

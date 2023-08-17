@@ -1,32 +1,27 @@
 import React, { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/auth-context";
-import useLocalStorage from "../../hooks/useLocalStorage";
 import Header from "../common/header";
 import { setAuthToken } from "../../api";
+import {  useSelector } from "react-redux";
+import { authS } from "../../redux/selector";
 
 const ProtectedLayout = (props) => {
   const navigate = useNavigate();
-  const auth = useAuth();
-  const [user, setUser] = useLocalStorage("user", {}); // store user info
+  const auth = useSelector(authS)
   useEffect(() => {
-    if (!auth.token) {
-      // console.log("No token found");
+    if (!auth.isAuthenticated) {
+      //console.log("No token found");
       navigate("/auth/login");
     }
     else {
-      // console.log("Token found");
+      //console.log("Token found");
       setAuthToken(auth.token);
     }
   });
   return (
     <>
-      <Header user={user}></Header>
+      <Header></Header>
       <Outlet
-        context={{
-          user: user,
-          setUser: setUser,
-        }}
       ></Outlet>
     </>
   );

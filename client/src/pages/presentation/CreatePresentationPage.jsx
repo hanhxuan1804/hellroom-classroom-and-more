@@ -10,6 +10,11 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { authS } from "../../redux/selector";
+import { createPresentation } from "../../api";
+import { useMutation } from "@tanstack/react-query";
+import { useSnackbar } from "notistack";
 
 const style = {
   position: "absolute",
@@ -50,9 +55,9 @@ function CreatePresentationPage() {
   const [presentationName, setPresentationName] = useState("");
   //eslint-disable-next-line
   const [group, setGroup] = useState(listOwnerGroup[0]);
-
   const [firstSubmit, setFirstSubmit] = useState(false);
-
+  const user = useSelector(authS).user;
+  const { enqueueSnackbar } = useSnackbar();
   const handleOpen = () => {
     setOpen(true);
   };
@@ -68,16 +73,33 @@ function CreatePresentationPage() {
   const handleCancel = () => {
     navigate(-1);
   };
-
+  const mutation = useMutation(
+    {
+      mutationFn: (newPresentation) => createPresentation(newPresentation),
+      onSuccess: (data) => {
+        console.log(data);
+        handleClose();
+      },
+      onerror: (error) => {
+        enqueueSnackbar(error.message, { variant: "error" });
+      },
+    },
+  )
   const handleSubmit = (event) => {
     event.preventDefault();
     setFirstSubmit(true);
     if (presentationName === "") return;
     // Xử lý việc tạo nhóm mới
+    const newPresentation = {
+      name: presentationName,
+      type: type,
+      group: group,
+      owner: user._id,
+      slide: [],
+    };
+    mutation.mutate(newPresentation);
 
     console.log(`Đã tạo ${presentationName} `);
-    // Sau khi tạo xong, đóng Modal
-    handleClose();
   };
 
   return (

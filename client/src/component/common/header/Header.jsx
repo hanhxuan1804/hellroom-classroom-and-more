@@ -25,7 +25,10 @@ import {
   ExpandMore as ExpandMoreIcon,
 } from "@mui/icons-material";
 import { Groups3, Slideshow } from "@mui/icons-material";
-import { useAuth } from "../../../context/auth-context";
+import { useDispatch, useSelector } from "react-redux";
+import { authS } from "../../../redux/selector";
+import useLocalStorage from "../../../hooks/useLocalStorage";
+import { logout } from "../../../redux/slice/authSlice";
 
 const theme = createTheme({
   palette: {
@@ -36,9 +39,10 @@ const theme = createTheme({
 });
 
 function Header(props) {
-  const auth = useAuth();
-  const { user } = props;
-
+  const user = useSelector(authS).user;
+  const dispatch = useDispatch();
+  //eslint-disable-next-line
+  const [authLocal, setAuthLocal] = useLocalStorage("auth", null);
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuName, setMenuName] = useState(null);
@@ -82,7 +86,11 @@ function Header(props) {
       ],
     },
     {
-      name: `${user?.lastName}`,
+      name: `${
+        user?.lastName.length > 10
+          ? user?.lastName.slice(0, 10) + "..."
+          : user?.lastName
+      }`,
       link: "/user",
       icon: (
         <Avatar
@@ -207,7 +215,8 @@ function Header(props) {
                                   key={index}
                                   style={{ color: "red" }}
                                   onClick={() => {
-                                    auth.logout();
+                                    dispatch(logout());
+                                    setAuthLocal(null);
                                     navigate(option.link);
                                   }}
                                 >
@@ -276,7 +285,8 @@ function Header(props) {
                             <MenuItem
                               key={index}
                               onClick={() => {
-                                auth.logout();
+                                dispatch(logout());
+                                setAuthLocal(null);
                                 setAnchorEl(null);
                                 navigate(option.link);
                               }}

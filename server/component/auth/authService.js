@@ -14,7 +14,6 @@ const client = new OAuth2Client(
 
 
 exports.googleLogin = async (req, res) => {
-  console.log(req.body);
   const code = req.body.code;
   if (!code) {
     return res.status(400).json({
