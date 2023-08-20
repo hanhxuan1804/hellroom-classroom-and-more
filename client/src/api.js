@@ -41,7 +41,7 @@ export const joinGroup = (payload) => api.post(`/group/join`, payload);
 export const getGroupMembers = (payload) =>
   api.get(`/group/${payload}/members`);
 
-export const getGroupPosts = (payload) => api.get(`/group-posts/${payload}`);
+export const getGroupPosts = (payload) => api.get(`/group-post/${payload}`);
 export const createGroupPost = (payload) =>
   api.post(`/group-post/create`, payload);
 export const updateGroupPost = (payload) =>

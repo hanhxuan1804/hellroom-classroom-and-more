@@ -21,8 +21,16 @@ const GroupPostSchema = new mongoose.Schema({
         },
     ],
     owner: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+        },
+        name: {
+            type: String,
+        },
+        avatar: {
+            type: String,
+        },
     },
     createdAt: {
         type: Date,

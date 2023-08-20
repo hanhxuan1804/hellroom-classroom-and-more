@@ -14,10 +14,11 @@ function TextEditor(props) {
   const titleType = ["Announcement", "Event", "Question", "Discussion"]
   const setIsPost = props.setIsPost;
   const handlePost = props.handlePost;
+  
   const [text, setText] = useState("");
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState(titleType[0]); // "Announcement"
-
+  const [error, setError] = useState(null); // ["error message"
   const handleTextChange = (event) => {
     setText(event.target.value);
   };
@@ -29,14 +30,14 @@ function TextEditor(props) {
   const handleFileRemove = () => {
     setFile(null);
   };
-
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("Text:", text);
-    console.log("File:", file);
-    console.log("Title:", title);
+    if (text === "") {
+      setError("Please enter something you want to post.");
+      return;
+    }
+
     const newPost = {
-      id: 1,
       title: title,
       content: text,
       file: file,
@@ -66,7 +67,9 @@ function TextEditor(props) {
             }}
           >
             {titleType.map((title) => (
-              <MenuItem value={title}>{title}</MenuItem>
+              <MenuItem 
+                key={title}
+              value={title}>{title}</MenuItem>
             ))}
           </Select>
         </Box>
@@ -78,6 +81,11 @@ function TextEditor(props) {
           rows={4}
           fullWidth
         />
+        {error && (
+          <Typography variant="body2" color="error">
+            {error}
+          </Typography>
+        )}
         <Box
           sx={{
             height: 20,
@@ -86,7 +94,6 @@ function TextEditor(props) {
             flexDirection: "row",
             justifyContent: "space-between",
           }}
-          fullWidth
         >
           <Dropzone onDrop={handleFileChange}>
             {({ getRootProps, getInputProps }) => (

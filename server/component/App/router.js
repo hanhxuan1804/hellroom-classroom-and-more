@@ -11,5 +11,5 @@ module.exports =(app)=>{
     app.use('/api/auth', authRoute);
     app.use('/api/user', userRoute);
     app.use('/api/group', authMiddleware ,  groupRoute);
-    app.use('/api/group-posts', authMiddleware ,  groupPost);
+    app.use('/api/group-post', authMiddleware ,  groupPost);
 }

@@ -1,8 +1,10 @@
 import {
   Avatar,
+  Backdrop,
   Box,
   Button,
   Card,
+  CircularProgress,
   Container,
   Dialog,
   Grid,
@@ -63,6 +65,7 @@ const GroupDetailsPage = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [tabValue, setTabValue] = useState(0);
   const [members, setMembers] = useState([]);
+  const [posts, setPosts] = useState([]);
   const navigate = useNavigate();
   const { loading, error, data } = useQuery({
     queryKey: ["groups-members", groupData?._id],
@@ -93,28 +96,64 @@ const GroupDetailsPage = () => {
   }, [data]);
 
   const user = useSelector(authS).user;
-  const postQuery = useQuery(["group", groupId, "posts"], async () => {
-    const result = await getGroupPosts(groupId);
-    return result;
+  const postQuery = useQuery({
+    queryKey: ["group-posts", groupData?._id],
+    queryFn: () => getGroupPosts(groupData?._id),
   });
-  const postMutation = useMutation((post) => {
-    return createGroupPost(groupId, post);
+  useEffect(() => {
+    if (postQuery.data) {
+      const fetchOwnerData = async () => {
+        const updatedPosts = postQuery.data.data.groupPost;
+        const destPosts = updatedPosts.map((post) => {
+          return {
+            _id: post._id,
+            title: post.title,
+            content: post.content,
+            file: post.file,
+            date: new Date(post.createdAt).toLocaleString(),
+            owner: post.owner,
+          };
+        });
+        destPosts.sort((a, b) => {
+          return new Date(b.date) - new Date(a.date);
+        });
+        setPosts(destPosts);
+      };
+      fetchOwnerData();
+    }
+    // eslint-disable-next-line
+  }, [postQuery.data]);
+  const postMutation = useMutation({
+    mutationFn: createGroupPost,
+    onSuccess: () => {
+      setIsPost(false);
+    },
   });
-  const handlePost = (post) => {
-    postMutation.mutate(post);
-    setIsPost(false);
+  const handlePost = async (post) => {
+    const postData = {
+      ...post,
+      group: groupId,
+      date: new Date().toLocaleString(),
+      owner: {
+        id: user._id,
+        name: user.firstName + " " + user.lastName,
+        avatar: user.avatar,
+      }
+    };
+    await postMutation.mutate(postData);
+    setPosts([postData, ...posts]);
   };
 
   const hanhdleEdit = () => {
     setIsEditOpen(true);
   };
-  const handleEditSubmit= (data) => {
+  const handleEditSubmit = (data) => {
     const updatedGroupD = {
       ...groupData,
       name: data.groupName,
       description: data.groupDescription,
       background: data.groupImage,
-    }
+    };
     dispath(updateGroup(updatedGroupD));
   };
   if (groupMutation.isLoading) return <LoadingPage />;
@@ -301,7 +340,7 @@ const GroupDetailsPage = () => {
                 </Typography>
               </Card>
             )}
-            {postQuery.data?.data.groupPost?.map((post) => (
+            {posts.map((post) => (
               <Card
                 key={post._id}
                 sx={{
@@ -313,6 +352,26 @@ const GroupDetailsPage = () => {
                   boxShadow: 2,
                 }}
               >
+                {post.owner.id === user._id && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "flex-end",
+                    }}
+                  >
+                    <IconButton
+                      size="small"
+                      color="primary"
+                      onClick={() => {
+                        // show mo}re options
+                      }}
+                      >
+                        <MoreVert sx={{ color: "black" }} />
+                      </IconButton>
+                  </div>)
+                  }
                 <Box
                   sx={{
                     display: "flex",
@@ -322,13 +381,40 @@ const GroupDetailsPage = () => {
                 >
                   <Avatar
                     sx={{ width: 40, height: 40, ml: 2, mt: 1, mb: 1 }}
-                    src="https://source.unsplash.com/random"
+                    src={post.owner.avatar}
                   />
-                  <Typography sx={{ ml: 2, fontWeight: "bold" }}>
-                    {post.title}
-                  </Typography>
-                  <Typography sx={{ ml: 2 }}>{post.content}</Typography>
+                  <div>
+                    <Typography sx={{ ml: 2, fontWeight: "bold" }}>
+                      {post.owner.name}
+                    </Typography>
+                    <Typography sx={{ ml: 2, fontSize: 12 }}>
+                      {post.date}
+                    </Typography>
+                  </div>
                 </Box>
+                <Grid
+                  container
+                  spacing={2}
+                  mb={2}
+                >
+                  <Grid item xs={12} sm={3}>
+                    <Typography
+                      sx={{
+                        ml: 2,
+                        mt: 2,
+                        fontWeight: "bold",
+                        fontSize: 16,
+                      }}
+                    >
+                      {post.title}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={9}>
+                    <Typography sx={{ ml: 2, mt: 2, fontSize: 14 }}>
+                      {post.content}
+                    </Typography>
+                  </Grid>
+                </Grid>
                 {post.file && (
                   <a href={post.file.path} download>
                     <div
@@ -375,7 +461,6 @@ const GroupDetailsPage = () => {
                       ":hover": {
                         boxShadow: 2,
                       },
-
                     }}
                     onClick={() => {
                       navigate("/user/" + member._id);
@@ -485,6 +570,15 @@ const GroupDetailsPage = () => {
           </div>
         </Paper>
       </Dialog>
+      <Backdrop
+        open={postMutation.isLoading}
+        sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          color: "#fff",
+        }}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Container>
   );
 };

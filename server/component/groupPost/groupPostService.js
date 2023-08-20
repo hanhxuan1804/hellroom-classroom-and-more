@@ -14,7 +14,6 @@ exports.getPostOfGroup = async (req, res) => {
     }
 
 exports.create = async (req, res) => {
-    const userId = req.user._id;
     const data = req.body;
     try {
         const groupPost = await GroupPost.create({
@@ -23,7 +22,11 @@ exports.create = async (req, res) => {
             content: data.content,
             file: data.file,
             comment: [],
-            owner: userId,
+            owner: {
+                id: req.user._id,
+                name: req.user.firstName + " " + req.user.lastName,
+                avatar: req.user.avatar,
+            }
         });
         return res.status(200).json({
             groupPost,
