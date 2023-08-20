@@ -8,16 +8,74 @@ import {
   OutlinedInput,
   Paper,
   Typography,
+  Slide,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import { Upload } from "@mui/icons-material";
 import React from "react";
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { deleteGroup, updateGroup } from "../../api";
+import { useSnackbar } from "notistack";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { deleteGroup as deleteGroupRedux } from "../../redux/slice/groupSlice"
+
 const GroupEdit = (props) => {
   const { name, description, background } = props.groupData;
+  const navigate = useNavigate();
+  const dispath = useDispatch();
   const [groupName, setGroupName] = useState(name);
   const [groupDescription, setGroupDescription] = useState(description);
   const [groupImage, setGroupImage] = useState(background);
-
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [firstSubmit, setFirstSubmit] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
+  const updateMutation = useMutation({
+    mutationFn: updateGroup,
+    onSuccess: (data) => {
+      props.handleEditSubmit({
+        groupName: groupName,
+        groupDescription: groupDescription,
+        groupImage: groupImage,
+      });
+      props.handleClose();
+      enqueueSnackbar("Update group successfully", { variant: "success" });
+    },
+    onError: (error) => {
+      enqueueSnackbar("Update group failed", { variant: "error" });
+    },
+  });
+  const handlleUpdate = async () => {
+    await updateMutation.mutate({
+      groupId: props.groupData._id,
+      groupName: groupName,
+      groupDescription: groupDescription,
+      groupImage: groupImage,
+    });
+    setFirstSubmit(true);
+  };
+  const deleteMutation = useMutation({
+    mutationFn: deleteGroup,
+    onSuccess: (data) => {
+      props.handleClose();
+      dispath(deleteGroupRedux(props.groupData._id));
+      navigate("/groups/mygroups");
+      enqueueSnackbar("Delete group successfully", { variant: "success" });
+    },
+    onError: (error) => {
+      enqueueSnackbar("Delete group failed", { variant: "error" });
+    },
+  });
+  const handleDelete = async () => {
+    await deleteMutation.mutate(props.groupData._id);
+  };
   return (
     <Modal open={props.open} onClose={props.handleClose}>
       <Box
@@ -26,7 +84,6 @@ const GroupEdit = (props) => {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 700,
           bgcolor: "background.paper",
           borderRadius: "10px",
           boxShadow: 24,
@@ -37,6 +94,13 @@ const GroupEdit = (props) => {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
+        }}
+        width={{
+          xs: "90%",
+          sm: "80%",
+          md: "60%",
+          lg: "50%",
+          xl: "40%",
         }}
       >
         <Paper
@@ -81,8 +145,7 @@ const GroupEdit = (props) => {
           </Button>
         </div>
         <Divider />
-        <form
-          onSubmit={props.handleSubmit}
+        <div
           style={{
             width: "100%",
             display: "flex",
@@ -104,10 +167,8 @@ const GroupEdit = (props) => {
               onChange={(e) => setGroupName(e.target.value)}
               label="Group Name"
             />
-            <FormHelperText error={props.firstSubmit && groupName === ""}>
-              {props.firstSubmit && groupName === ""
-                ? "Group name is required"
-                : ""}
+            <FormHelperText error={firstSubmit && groupName === ""}>
+              {firstSubmit && groupName === "" ? "Group name is required" : ""}
             </FormHelperText>
           </FormControl>
           <Typography sx={{ mt: 2 }} fontStyle={"italic"}>
@@ -134,6 +195,20 @@ const GroupEdit = (props) => {
             }}
           >
             <Button
+              variant="outlined"
+              color="error"
+              sx={{
+                width: 100,
+                height: 40,
+                borderRadius: 10,
+              }}
+              onClick={() => {
+                setConfirmDelete(true);
+              }}
+            >
+              Delete
+            </Button>
+            <Button
               variant="contained"
               sx={{
                 width: 100,
@@ -151,7 +226,7 @@ const GroupEdit = (props) => {
               Cancel
             </Button>
             <Button
-              type="submit"
+              size="small"
               variant="contained"
               sx={{
                 width: 100,
@@ -164,14 +239,61 @@ const GroupEdit = (props) => {
                   color: "white",
                 },
               }}
+              onClick={() => {
+                handlleUpdate();
+              }}
             >
               Save
             </Button>
           </div>
-        </form>
+        </div>
+        <Dialog
+          open={confirmDelete}
+          onClose={() => setConfirmDelete(false)}
+          TransitionComponent={Transition}
+          keepMounted
+          aria-describedby="alert-dialog-slide-description"
+        >
+          <DialogTitle id="alert-dialog-slide-title">
+            {"Are you sure you want to delete this group?"}
+          </DialogTitle>
+          <DialogContent>
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={deleteMutation.isLoading}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
+
+            <DialogContentText id="alert-dialog-slide-description">
+              This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setConfirmDelete(false)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                handleDelete();
+              }}
+              color="error"
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Backdrop
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={updateMutation.isLoading}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
       </Box>
     </Modal>
   );
 };
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 export default GroupEdit;

@@ -7,19 +7,29 @@ import {
   Dialog,
   Grid,
   IconButton,
+  Menu,
+  MenuItem,
   Paper,
+  Tab,
+  Tabs,
   Typography,
 } from "@mui/material";
-import { Edit, Fullscreen } from "@mui/icons-material";
-import { useParams } from "react-router-dom";
+import { Edit, Fullscreen, MoreHoriz, MoreVert } from "@mui/icons-material";
+import { useNavigate, useParams } from "react-router-dom";
 import TextEditor from "../../component/groups/TextEditor";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileIcon, defaultStyles } from "react-file-icon";
 import GroupEdit from "../../component/groups/GroupEdit";
-import { getGroupPosts, createGroupPost } from "../../api";
+import { getGroupPosts, createGroupPost, getGroupMembers } from "../../api";
 import { useSelector } from "react-redux";
 import { authS, groupsS } from "../../redux/selector";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import TabPanel from "../../component/TabPanel";
+import LoadingPage from "../common/LoadingPage";
+import ErrorPage from "../common/ErrorPage";
+import { getGroup } from "../../api";
+import { useDispatch } from "react-redux";
+import { updateGroup } from "../../redux/slice/groupSlice";
 
 const getFileExtension = (filename) => {
   if (!filename) return "png";
@@ -28,12 +38,60 @@ const getFileExtension = (filename) => {
 
 const GroupDetailsPage = () => {
   const { groupId } = useParams();
+  const dispath = useDispatch();
   const groups = useSelector(groupsS).groups;
-  const groupData = groups.find((group) => group._id === groupId);
+  const groupDataR = groups.find((group) => group._id === groupId);
+  const [groupData, setGroupData] = useState(groupDataR);
+  const groupMutation = useMutation(getGroup);
+  useEffect(() => {
+    if (groupDataR) setGroupData(groupDataR);
+    else {
+      async function fetchGroup() {
+        const result = await groupMutation.mutateAsync(groupId);
+        setGroupData(result.data.group);
+      }
+      fetchGroup();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupId]);
+
   const [showCode, setShowCode] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [isPost, setIsPost] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [options, setOptions] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [tabValue, setTabValue] = useState(0);
+  const [members, setMembers] = useState([]);
+  const navigate = useNavigate();
+  const { loading, error, data } = useQuery({
+    queryKey: ["groups-members", groupData?._id],
+    queryFn: () => getGroupMembers(groupData?._id),
+  });
+  useEffect(() => {
+    if (data) {
+      const fetchOwnerData = async () => {
+        const updatedMembers = data.data.members;
+        const destmembers = updatedMembers.map((member) => {
+          return {
+            _id: member._id,
+            name: member.firstName + " " + member.lastName,
+            avatar: member.avatar,
+            role:
+              member._id === groupData.owner
+                ? "Owner"
+                : groupData.coowners.includes(member._id)
+                ? "Co-owner"
+                : "Member",
+          };
+        });
+        setMembers(destmembers);
+      };
+      fetchOwnerData();
+    }
+    // eslint-disable-next-line
+  }, [data]);
+
   const user = useSelector(authS).user;
   const postQuery = useQuery(["group", groupId, "posts"], async () => {
     const result = await getGroupPosts(groupId);
@@ -50,10 +108,24 @@ const GroupDetailsPage = () => {
   const hanhdleEdit = () => {
     setIsEditOpen(true);
   };
+  const handleEditSubmit= (data) => {
+    const updatedGroupD = {
+      ...groupData,
+      name: data.groupName,
+      description: data.groupDescription,
+      background: data.groupImage,
+    }
+    dispath(updateGroup(updatedGroupD));
+  };
+  if (groupMutation.isLoading) return <LoadingPage />;
+  if (groupMutation.isError) return <ErrorPage />;
   if (!groupData) return <div>Group not found</div>;
   const isMember = groupData.members?.includes(user._id);
   if (!isMember) return <div>Not a member</div>;
   const inviteLink = `${window.location.origin}/groups/join/${groupData.code}`;
+  const isOwner = groupData.owner === user._id;
+  if (loading) return <LoadingPage />;
+  if (error) return <ErrorPage />;
   return (
     <Container maxWidth="md">
       <Paper
@@ -70,23 +142,26 @@ const GroupDetailsPage = () => {
           alignItems: "flex-end",
         }}
       >
-        <Button
-          variant="contained"
-          sx={{
-            position: "absolute",
-            top: 10,
-            right: 10,
-            background: "#0b5c6d",
-          }}
-          onClick={hanhdleEdit}
-          startIcon={<Edit />}
-        >
-          Edit
-        </Button>
+        {isOwner && (
+          <Button
+            variant="contained"
+            sx={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              background: "#0b5c6d",
+            }}
+            onClick={hanhdleEdit}
+            startIcon={<Edit />}
+          >
+            Edit
+          </Button>
+        )}
         <GroupEdit
           open={isEditOpen}
           handleClose={() => setIsEditOpen(false)}
           groupData={groupData}
+          handleEditSubmit={handleEditSubmit}
         />
         <Typography
           variant="h3"
@@ -95,8 +170,53 @@ const GroupDetailsPage = () => {
         >
           {groupData.name}
         </Typography>
+        <IconButton
+          size="large"
+          sx={{ mb: 2 }}
+          onClick={(e) => {
+            setAnchorEl(e.currentTarget);
+            setOptions(true);
+          }}
+        >
+          <MoreHoriz sx={{ color: "white" }} />
+        </IconButton>
+        {options && (
+          <Menu
+            anchorEl={anchorEl}
+            open={options}
+            onClose={() => setOptions(false)}
+          >
+            <MenuItem
+              key="1"
+              onClick={() => {
+                setOptions(false);
+              }}
+            >
+              Leave group
+            </MenuItem>
+            <MenuItem
+              key="2"
+              onClick={() => {
+                setOptions(false);
+              }}
+            >
+              Invite by mail
+            </MenuItem>
+          </Menu>
+        )}
       </Paper>
-      <Grid container spacing={2} sx={{ mt: 2 }}>
+      <Tabs
+        value={tabValue}
+        onChange={(e, newValue) => {
+          setTabValue(newValue);
+        }}
+        sx={{ mt: 1 }}
+        centered
+      >
+        <Tab value={0} label="Home"></Tab>
+        <Tab value={1} label="Members"></Tab>
+      </Tabs>
+      <Grid container spacing={2}>
         <Grid item xs={12} sm={2}>
           <Card sx={{ p: 1, mt: 2, boxShadow: 2 }}>
             <Typography fontSize={14} fontWeight={"bold"}>
@@ -142,92 +262,159 @@ const GroupDetailsPage = () => {
           </Card>
         </Grid>
         <Grid item xs={12} sm={10}>
-          {isPost ? (
-            <TextEditor handlePost={handlePost} setIsPost={setIsPost} />
-          ) : (
-            <Card
-              sx={{
-                mt: 2,
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                boxShadow: 2,
-                borderRadius: 2,
-                cursor: "pointer",
-                ":hover": {
-                  background: "#e0e0e0",
-                },
-              }}
-              onClick={() => {
-                setIsPost(true);
-              }}
-            >
-              <Avatar
-                sx={{ width: 40, height: 40, ml: 2, mt: 1, mb: 1 }}
-                src={user.avatar}
-              />
-
-              <Typography
+          <TabPanel value={tabValue} index={0}>
+            {isPost ? (
+              <TextEditor handlePost={handlePost} setIsPost={setIsPost} />
+            ) : (
+              <Card
                 sx={{
-                  ml: 2,
-                  cursor: "pointer",
-                  ":hover": {
-                    color: "#0b5c6d",
-                  },
-                }}
-              >
-                Post something to the group
-              </Typography>
-            </Card>
-          )}
-          {postQuery.data?.data.groupPost?.map((post) => (
-            <Card
-              sx={{
-                mt: 2,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                borderRadius: 2,
-                boxShadow: 2,
-              }}
-            >
-              <Box
-                sx={{
+                  mt: 2,
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "center",
+                  boxShadow: 2,
+                  borderRadius: 2,
+                  cursor: "pointer",
+                  ":hover": {
+                    background: "#e0e0e0",
+                  },
+                }}
+                onClick={() => {
+                  setIsPost(true);
                 }}
               >
                 <Avatar
                   sx={{ width: 40, height: 40, ml: 2, mt: 1, mb: 1 }}
-                  src="https://source.unsplash.com/random"
+                  src={user.avatar}
                 />
-                <Typography sx={{ ml: 2, fontWeight: "bold" }}>
-                  {post.title}
+
+                <Typography
+                  sx={{
+                    ml: 2,
+                    cursor: "pointer",
+                    ":hover": {
+                      color: "#0b5c6d",
+                    },
+                  }}
+                >
+                  Post something to the group
                 </Typography>
-                <Typography sx={{ ml: 2 }}>{post.content}</Typography>
-              </Box>
-              {post.file && (
-                <a href={post.file.path} download>
+              </Card>
+            )}
+            {postQuery.data?.data.groupPost?.map((post) => (
+              <Card
+                key={post._id}
+                sx={{
+                  mt: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  borderRadius: 2,
+                  boxShadow: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}
+                >
+                  <Avatar
+                    sx={{ width: 40, height: 40, ml: 2, mt: 1, mb: 1 }}
+                    src="https://source.unsplash.com/random"
+                  />
+                  <Typography sx={{ ml: 2, fontWeight: "bold" }}>
+                    {post.title}
+                  </Typography>
+                  <Typography sx={{ ml: 2 }}>{post.content}</Typography>
+                </Box>
+                {post.file && (
+                  <a href={post.file.path} download>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div style={{ width: 48, margin: 10 }}>
+                        <FileIcon
+                          extension={getFileExtension(post.file.name)}
+                          {...defaultStyles[getFileExtension(post.file.name)]}
+                        />
+                      </div>
+                      <div>{post.file.name}</div>
+                    </div>
+                  </a>
+                )}
+              </Card>
+            ))}
+          </TabPanel>
+          <TabPanel value={tabValue} index={1}>
+            <Card sx={{ p: 1, mt: 2, boxShadow: 2 }}>
+              <Typography fontSize={14} fontWeight={"bold"}>
+                Members:
+              </Typography>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                {members?.map((member) => (
                   <div
+                    key={member._id}
                     style={{
                       display: "flex",
                       flexDirection: "row",
                       alignItems: "center",
+                      justifyContent: "space-between",
+                      cursor: "pointer",
+                      ":hover": {
+                        boxShadow: 2,
+                      },
+
+                    }}
+                    onClick={() => {
+                      navigate("/user/" + member._id);
                     }}
                   >
-                    <div style={{ width: 48, margin: 10 }}>
-                      <FileIcon
-                        extension={getFileExtension(post.file.name)}
-                        {...defaultStyles[getFileExtension(post.file.name)]}
-                      />
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Avatar
+                        sx={{ width: 40, height: 40, ml: 2, mt: 1, mb: 1 }}
+                        src={member.avatar}
+                      ></Avatar>
+                      <Typography fontSize={16} fontWeight={"bold"} ml={2}>
+                        {member.name}
+                      </Typography>
                     </div>
-                    <div>{post.file.name}</div>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography fontSize={16} fontWeight={"bold"}>
+                        {member.role}
+                      </Typography>
+                      <IconButton size="small" color="primary">
+                        <MoreVert sx={{ color: "black" }} />
+                      </IconButton>
+                    </div>
                   </div>
-                </a>
-              )}
+                ))}
+              </div>
             </Card>
-          ))}
+          </TabPanel>
         </Grid>
       </Grid>
       <Dialog
@@ -284,7 +471,7 @@ const GroupDetailsPage = () => {
               color={"#3367d5"}
               mt={2}
             >
-              {groupData.name + ' : '} 
+              {groupData.name + " : "}
             </Typography>
             <Typography
               fontSize={20}

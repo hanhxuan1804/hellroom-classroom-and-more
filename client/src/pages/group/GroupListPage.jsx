@@ -10,68 +10,25 @@ import {
   Avatar,
   Input,
   Grid,
-} from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-import { useQuery } from "@tanstack/react-query";
-import { getGroups, getUser } from "../../api";
-import { authS, groupsS } from "../../redux/selector";
-import ErrorPage from "../common/ErrorPage";
-import LoadingPage from "../common/LoadingPage";
-import { setGroups } from "../../redux/slice/groupSlice";
+  } from "@mui/material";
+import { useSelector } from "react-redux";
+import { groupsS } from "../../redux/selector";
+
 
 const GroupListPage = () => {
   const navigate = useNavigate();
-  const user = useSelector(authS).user;
   const groups = useSelector(groupsS).groups;
-  const [GroupsData, setGroupsData] = useState(groups);
   const [GroupsShow, setGroupsShow] = useState(groups);
-  const { isLoading, error, data } = useQuery({
-    queryKey: ["groups", user._id],
-    queryFn: () => getGroups(user._id),
-  });
-  const dispatch = useDispatch();
   useEffect(() => {
-    if (data) {
-      const fetchOwnerData = async () => {
-        const changedGroups = data.data.groups.filter((group) => {
-          const isExist = groups.find((g) => g._id === group._id);
-          return !isExist;
-        });
+    setGroupsShow([...groups]);
+  }, [groups]);
 
-        const updatedGroups = await Promise.all(
-          changedGroups.map(async (group) => {
-            const owner = await getUser(group.owner);
-            return {
-              ...group,
-              ownerData: owner.data,
-            };
-          })
-        );
-
-        setGroupsData([...GroupsData, ...updatedGroups]);
-        setGroupsShow([...GroupsData, ...updatedGroups]);
-        dispatch(setGroups([...GroupsData, ...updatedGroups]));
-      };
-
-      fetchOwnerData();
-    }
-    // eslint-disable-next-line
-  }, [data]);
-
-  if (error) {
-    return <ErrorPage error={error} />;
-  }
-
-  if (isLoading) {
-    return <LoadingPage />;
-  }
-  console.log(GroupsShow);
   return (
     <Container>
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item xs={12} md={6}>
           <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
-            Groups
+            All Groups
           </Typography>
         </Grid>
         <Grid
@@ -91,7 +48,7 @@ const GroupListPage = () => {
             sx={{ ml: 2, mt: 2, mb: 2 }}
             onChange={(e) => {
               setGroupsShow(
-                GroupsData.filter((group) =>
+                groups.filter((group) =>
                   group.name
                     .toLowerCase()
                     .includes(e.target.value.toLowerCase())

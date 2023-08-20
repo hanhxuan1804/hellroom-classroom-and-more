@@ -36,14 +36,10 @@ export const getGroups = (payload) => api.get(`/group`, payload);
 export const getGroup = (payload) => api.get(`/group/${payload}`);
 export const createGroup = (payload) => api.post(`/group/create`, payload);
 export const updateGroup = (payload) => api.put(`/group/update`, payload);
-export const deleteGroup = (payload) => api.delete(`/group/delete`, payload);
-
+export const deleteGroup = (payload) => api.delete(`/group/delete/${payload}`);
+export const joinGroup = (payload) => api.post(`/group/join`, payload);
 export const getGroupMembers = (payload) =>
-  api.get(`/group-members/${payload}`);
-export const addGroupMember = (payload) =>
-  api.post(`/group-member/add`, payload);
-export const removeGroupMember = (payload) =>
-  api.delete(`/group-member/remove`, payload);
+  api.get(`/group/${payload}/members`);
 
 export const getGroupPosts = (payload) => api.get(`/group-posts/${payload}`);
 export const createGroupPost = (payload) =>

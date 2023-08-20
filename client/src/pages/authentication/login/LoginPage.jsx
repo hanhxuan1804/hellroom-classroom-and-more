@@ -19,8 +19,12 @@ import { useGoogleLogin } from "@react-oauth/google";
 
 import { login, googleLogin } from "../../../api";
 import { useDispatch, useSelector } from "react-redux";
-import { authS } from "../../../redux/selector";
-import { loginRequest, loginSuccess, loginFailure } from "../../../redux/slice/authSlice";
+import { authS, pathS } from "../../../redux/selector";
+import {
+  loginRequest,
+  loginSuccess,
+  loginFailure,
+} from "../../../redux/slice/authSlice";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 
 import "./LoginPage.css";
@@ -31,15 +35,13 @@ function LoginPage() {
   const authSelector = useSelector(authS);
   const [showPassword, setShowPassword] = useState(false);
   //eslint-disable-next-line
-  const [auth , setAuth] = useLocalStorage("auth", {})
-  const setAuthLocal = (data)=>{
-    setAuth(
-      {
-        isAuthenticated: true,
-        data: data
-      }
-    )
-  }
+  const [auth, setAuth] = useLocalStorage("auth", {});
+  const setAuthLocal = (data) => {
+    setAuth({
+      isAuthenticated: true,
+      data: data,
+    });
+  };
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -56,9 +58,13 @@ function LoginPage() {
     onSuccess: (data) => {
       const result = data.data;
       result.user.role === "admin"
-        ? dispatch(loginSuccess(result)) && setAuthLocal(result) && navigate("/admin")
+        ? dispatch(loginSuccess(result)) &&
+          setAuthLocal(result) &&
+          navigate("/admin")
         : result.user.active
-        ? dispatch(loginSuccess(result)) && setAuthLocal(result) && navigate("/")
+        ? dispatch(loginSuccess(result)) &&
+          setAuthLocal(result) &&
+          navigate("/")
         : navigate("/auth/active");
     },
     onError: (error) => {
@@ -91,7 +97,7 @@ function LoginPage() {
     onSuccess: (data) => {
       const result = data.data;
       if (result) {
-        setAuthLocal(result)
+        setAuthLocal(result);
         dispatch(loginSuccess(result)) && navigate("/");
       }
     },
@@ -114,11 +120,14 @@ function LoginPage() {
     onSuccess: (codeResponse) => googleMutatuion.mutate(codeResponse),
     accessType: "offline",
     scope: "openid",
-    flow: 'auth-code',
+    flow: "auth-code",
     onFailure: (error) => enqueueSnackbar(error.message, { variant: "error" }),
   });
-
+  const prePath = useSelector(pathS).path;
   if (authSelector.isAuthenticated) {
+    if (prePath) {
+      return <Navigate to={prePath} />;
+    }
     return <Navigate to="/" />;
   }
   return (
@@ -252,7 +261,6 @@ function LoginPage() {
             >
               Login with Google
             </Button>
-            
           </div>
         </Box>
       </form>

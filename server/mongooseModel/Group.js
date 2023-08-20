@@ -49,4 +49,13 @@ const GroupSchema = new mongoose.Schema({
     },
 });
 
+GroupSchema.pre("save", async function (next) {
+    const group = this;
+    group.members = [...new Set(group.members)];
+    group.coowners = [...new Set(group.coowners)];
+    next();
+    
+});
+
+
 module.exports = mongoose.model("Group", GroupSchema);

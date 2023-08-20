@@ -48,8 +48,7 @@ const JoinGroupPage = () => {
     event.preventDefault();
     setFirstSubmit(true);
     if(code === "") return;
-    console.log("Code:", code);
-    navigate("/groups/mygroups");
+    navigate(`/groups/join/${code}`);
   };
   return (
     <Modal

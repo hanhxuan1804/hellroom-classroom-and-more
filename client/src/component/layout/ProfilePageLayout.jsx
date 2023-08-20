@@ -20,15 +20,44 @@ import { useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
 import { useSelector, useDispatch } from "react-redux";
 import { authS } from "../../redux/selector";
-import { updateProfileSuccess, updateProfileRequest, updateProfileFailure } from "../../redux/slice/authSlice";
-
+import {
+  updateProfileSuccess,
+  updateProfileRequest,
+  updateProfileFailure,
+} from "../../redux/slice/authSlice";
+import { useParams } from "react-router";
+import { getUser } from "../../api";
+import LoadingPage from "../../pages/common/LoadingPage";
 
 function ProfilePageLayout() {
-  const user = useSelector(authS).user;
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [isEidt, setIsEdit] = useState(false);
   const location = useLocation();
+  const [isMyProfile, setIsMyProfile] = useState(false);
+  const userRedux = useSelector(authS).user;
+  const [user, setUser] = useState();
+  const id = useParams().userId;
+  const userMutation = useMutation(getUser);
+
+  useEffect(() => {
+    if (id === userRedux._id) {
+      setUser(userRedux);
+      setIsMyProfile(true);
+    } else {
+      // get user from server
+      async function fetchUser() {
+        const result = await userMutation.mutateAsync(id);
+        if (result.status === 200) {
+          setUser(result.data);
+        }
+      }
+      fetchUser();
+      setIsMyProfile(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, userRedux._id]);
+
   useEffect(() => {
     if (location.pathname === "/user/edit") {
       setIsEdit(true);
@@ -39,7 +68,7 @@ function ProfilePageLayout() {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [avatar, setAvatar] = useState(user.avatar); 
+  const [avatar, setAvatar] = useState(user?.avatar);
   const [file, setFile] = useState(null); // store file to upload
   const [isUpload, setIsUpload] = useState(false);
   const handleAvatarChange = (e) => {
@@ -63,22 +92,23 @@ function ProfilePageLayout() {
       });
       setAvatar(result.data.avatar);
       setIsUpload(false);
-      
-    }
-    else{
+    } else {
       dispatch(updateProfileFailure());
       enqueueSnackbar(result.data, {
         variant: "error",
       });
     }
   };
+  if (userMutation.isLoading) {
+    return <LoadingPage />;
+  }
 
   return (
     <Container maxWidth="lg">
       <Card sx={{ marginTop: "20px" }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <CardHeader title={`${user.firstName} ${user.lastName}`} />
+            <CardHeader title={`${user?.firstName} ${user?.lastName}`} />
           </Grid>
           <Grid
             item
@@ -91,7 +121,7 @@ function ProfilePageLayout() {
               padding: 0,
             }}
           >
-            {!isSmallScreen && (
+            {isMyProfile && !isSmallScreen && (
               <Button
                 variant="outlined"
                 style={{
@@ -121,13 +151,14 @@ function ProfilePageLayout() {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
               <Box sx={{ display: "flex", justifyContent: "center" }}>
-                <Avatar src={isUpload ? avatar : user?.avatar} sx={{ width: 100, height: 100 }}>
-                  {user.firstName.charAt(0)}
+                <Avatar
+                  src={isUpload ? avatar : user?.avatar}
+                  sx = {isMyProfile ?  {width: "100px", height: "100px"}: {width: "200px", height: "200px"}}
+                >
+                  {user?.firstName?.charAt(0)}
                 </Avatar>
               </Box>
-              <form
-                encType="multipart/form-data"
-              >
+              {isMyProfile && <form encType="multipart/form-data">
                 <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                   {isUpload ? (
                     <Box>
@@ -141,7 +172,7 @@ function ProfilePageLayout() {
                           marginRight: "10px",
                         }}
                         onClick={() => {
-                          setAvatar(user.avatar);
+                          setAvatar(user?.avatar);
                           setIsUpload(false);
                         }}
                       >
@@ -155,8 +186,8 @@ function ProfilePageLayout() {
                         size="small"
                         component="label"
                         type="submit"
-                        onClick={()=>{
-                          handleUploadAvatar()
+                        onClick={() => {
+                          handleUploadAvatar();
                         }}
                       >
                         {mutation.isLoading ? (
@@ -164,34 +195,41 @@ function ProfilePageLayout() {
                         ) : (
                           "Save"
                         )}
-                       
                       </Button>
                     </Box>
                   ) : (
-                    <Button
-                      variant="outlined"
-                      style={{
-                        borderColor: "#778899",
-                      }}
-                      size="small"
-                      component="label"
-                    >
-                      Update Avatar
-                      <input
-                        name="file"
-                        type="file"
-                        accept="image/*"
-                        hidden
-                        onChange={handleAvatarChange}
-                      />
-                    </Button>
+                     (
+                      <Button
+                        variant="outlined"
+                        style={{
+                          borderColor: "#778899",
+                        }}
+                        size="small"
+                        component="label"
+                      >
+                        Update Avatar
+                        <input
+                          name="file"
+                          type="file"
+                          accept="image/*"
+                          hidden
+                          onChange={handleAvatarChange}
+                        />
+                      </Button>
+                    )
                   )}
                 </Box>
-              </form>
-            </Grid>
-            <Outlet />
+              </form>}
+            </Grid> 
+            <Outlet
+              context={{
+                isMyProfile: isMyProfile,
+                isEidt: isEidt,
+                user: user,
+              }}
+            />
           </Grid>
-          {isSmallScreen && !isEidt && (
+          {isMyProfile && isSmallScreen && !isEidt && (
             <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
               <Button
                 variant="outlined"

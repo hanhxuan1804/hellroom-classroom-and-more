@@ -102,7 +102,7 @@ function Header(props) {
       options: [
         {
           name: "Profile",
-          link: "/user/profile",
+          link: `/user/${user?._id}`,
         },
         {
           name: "Change Password",

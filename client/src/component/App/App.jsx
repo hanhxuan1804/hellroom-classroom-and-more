@@ -1,10 +1,11 @@
 import "./App.css";
-import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { Outlet, Route, Routes } from "react-router-dom";
 import { ActiveEmailPage, LoginPage, RegisterPage } from "../../pages/authentication";
 import { ProfilePageLayout, ProtectedLayout } from "../layout";
 import { ProfilePage, EditProfilePage } from "../../pages/user";
 import { GroupListPage, GroupDetailsPage, CreateGroupPage, JoinGroupPage  } from "../../pages/group";
 import { CreatePresentationPage, EditPresentationPage } from "../../pages/presentation";
+import JoinGroup from "../groups/JoinGroup";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/slice/authSlice";
@@ -29,6 +30,7 @@ function App() {
           <Route path=":groupId" element={<GroupDetailsPage/>} />
           <Route path="create" element={<CreateGroupPage/>} />
           <Route path="join" element={<JoinGroupPage/>} />
+          <Route path="join/:code" element={<JoinGroup/>} />
         </Route>
         <Route path="presentation" element={<Outlet/>} >
           <Route path="create" element={<CreatePresentationPage/>} />
@@ -38,10 +40,8 @@ function App() {
         </Route>
 
         <Route path="user" element={<ProfilePageLayout/>} exact>
-          <Route path="" element={<Navigate to="profile" />} />
-          <Route path="profile" element={<ProfilePage />} />
           <Route path="edit" element={<EditProfilePage />} />
-          <Route path=":userId" element={<h1>Profile</h1>} />
+          <Route path=":userId" element={<ProfilePage/>} />
         </Route>
       </Route>
     </Routes>
