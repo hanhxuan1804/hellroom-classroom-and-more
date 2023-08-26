@@ -7,24 +7,30 @@ import {
   FormHelperText,
   Typography,
   Select,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { authS } from "../../redux/selector";
+import { authS, groupsS } from "../../redux/selector";
 import { createPresentation } from "../../api";
 import { useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "notistack";
+import { useDispatch } from "react-redux";
+import { addPresentation } from "../../redux/slice/presentationSlice";
 
 const style = {
   position: "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 400,
   bgcolor: "background.paper",
   borderRadius: "10px",
-  with: "400px",
+  width:{
+    xs: "80%",
+    sm: "400px",
+  },
   boxShadow: 24,
   pt: 2,
   px: 4,
@@ -34,29 +40,22 @@ const style = {
   justifyContent: "center",
   alignItems: "center",
 };
-const listOwnerGroup = [
-  {
-    id: 1,
-    name: "Group 1",
-  },
-  {
-    id: 2,
-    name: "Group 2",
-  },
-  {
-    id: 3,
-    name: "Group 3",
-  },
-];
+
 function CreatePresentationPage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
   const [type, setType] = useState("public");
   const [presentationName, setPresentationName] = useState("");
   //eslint-disable-next-line
-  const [group, setGroup] = useState(listOwnerGroup[0]);
   const [firstSubmit, setFirstSubmit] = useState(false);
   const user = useSelector(authS).user;
+  const groups = useSelector(groupsS).groups;
+  const groupList = groups.filter(
+    (group) => group.owner === user._id || group.coowners.includes(user._id)
+  );
+  const [group, setGroup] = useState(groupList[0]);
+  const [isHaveGroup] = useState(groupList.length > 0);
   const { enqueueSnackbar } = useSnackbar();
   const handleOpen = () => {
     setOpen(true);
@@ -65,26 +64,29 @@ function CreatePresentationPage() {
     handleOpen();
   }, []);
   const handleClose = (event, reason) => {
-    if (reason && reason === "backdropClick" && reason === "escapeKeyDown")
+    if (reason && (reason === "backdropClick" || reason === "escapeKeyDown"))
       return;
-    setOpen(false);
-    navigate("/presentation/:1/edit");
+    //setOpen(false);
   };
   const handleCancel = () => {
     navigate(-1);
   };
-  const mutation = useMutation(
-    {
-      mutationFn: (newPresentation) => createPresentation(newPresentation),
-      onSuccess: (data) => {
-        console.log(data);
-        handleClose();
-      },
-      onerror: (error) => {
-        enqueueSnackbar(error.message, { variant: "error" });
-      },
+  const mutation = useMutation({
+    mutationFn: (newPresentation) => createPresentation(newPresentation),
+    onSuccess: (data) => {
+      const presentation = data.data.presentation;
+      const slides = data.data.slides;
+      presentation.slides = slides;
+      dispatch(addPresentation(presentation));
+      navigate(`/presentation/${presentation._id}/edit`);
+      enqueueSnackbar("Create presentation successfully", {
+        variant: "success",
+      });
     },
-  )
+    onerror: (error) => {
+      enqueueSnackbar(error.message, { variant: "error" });
+    },
+  });
   const handleSubmit = (event) => {
     event.preventDefault();
     setFirstSubmit(true);
@@ -93,13 +95,12 @@ function CreatePresentationPage() {
     const newPresentation = {
       name: presentationName,
       type: type,
-      group: group,
+      group: group?._id,
       owner: user._id,
       slide: [],
     };
-    mutation.mutate(newPresentation);
-
-    console.log(`Đã tạo ${presentationName} `);
+    //
+    mutation.mutateAsync(newPresentation);
   };
 
   return (
@@ -148,7 +149,22 @@ function CreatePresentationPage() {
                 }}
               >
                 <option value={"public"}>Public</option>
-                <option value={"private"}>Private</option>
+                <option value={"private"} disabled={!isHaveGroup}>
+                  {" "}
+                  Private
+                </option>
+                {!isHaveGroup && (
+                  <option
+                    disabled={true}
+                    style={{
+                      color: "#FF9966",
+                      fontStyle: "italic",
+                      fontSize: "10px",
+                    }}
+                  >
+                    *You don't have any group to create private presentation
+                  </option>
+                )}
               </Select>
             </FormControl>
           </div>
@@ -177,9 +193,7 @@ function CreatePresentationPage() {
                   native
                   onChange={(event) =>
                     setGroup(
-                      listOwnerGroup.find(
-                        (item) => item.id === parseInt(event.target.value)
-                      )
+                      groupList.find((item) => item._id === event.target.value)
                     )
                   }
                   inputProps={{
@@ -187,8 +201,10 @@ function CreatePresentationPage() {
                     id: "outlined-age-native-simple",
                   }}
                 >
-                  {listOwnerGroup.map((item) => (
-                    <option value={item.id}>{item.name}</option>
+                  {groupList.map((item) => (
+                    <option key={item._id} value={item._id}>
+                      {item.name}
+                    </option>
                   ))}
                 </Select>
               </FormControl>
@@ -221,7 +237,7 @@ function CreatePresentationPage() {
               />
               <FormHelperText error={presentationName === "" && firstSubmit}>
                 {presentationName === "" && firstSubmit
-                  ? "*Group name is required"
+                  ? "*Presentation name is required"
                   : ""}
               </FormHelperText>
             </FormControl>
@@ -273,6 +289,12 @@ function CreatePresentationPage() {
             </Button>
           </div>
         </form>
+        <Backdrop
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={mutation.isLoading}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
       </Box>
     </Modal>
   );

@@ -29,6 +29,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { authS } from "../../../redux/selector";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 import { logout } from "../../../redux/slice/authSlice";
+import { clearGroups } from "../../../redux/slice/groupSlice";
 
 const theme = createTheme({
   palette: {
@@ -57,7 +58,7 @@ function Header(props) {
           link: "/groups/join",
         },
         {
-          name: "My Groups",
+          name: "All Groups",
           link: "/groups/mygroups",
         },
         {
@@ -71,10 +72,6 @@ function Header(props) {
       link: "/presentation",
       icon: <Slideshow />,
       options: [
-        {
-          name: "Join Presentation",
-          link: "/presentation/join",
-        },
         {
           name: "My Presentations",
           link: "/presentation/my",
@@ -116,6 +113,34 @@ function Header(props) {
     },
   ];
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const handleLogout = () => {
+    dispatch(logout());
+    dispatch(clearGroups());
+    setAuthLocal(null);
+    navigate("/auth/login");
+  };
+  let timeoutId = null;
+
+  const handleClose = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+      setAnchorEl(null);
+      setMenuName(null);
+    }, 0);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuName(null);
+  };
+
+  const handleMenuEnter = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -215,9 +240,7 @@ function Header(props) {
                                   key={index}
                                   style={{ color: "red" }}
                                   onClick={() => {
-                                    dispatch(logout());
-                                    setAuthLocal(null);
-                                    navigate(option.link);
+                                    handleLogout();
                                   }}
                                 >
                                   <LogoutIcon />
@@ -247,14 +270,22 @@ function Header(props) {
           ) : (
             navbarItems.map((item, index) => {
               return (
-                <div key={index}>
+                <div key={index} style={{ display: "inline-block" }}>
                   <Button
                     variant="outlined"
-                    style={{
+                    sx={{
+                      zIndex: (theme) => theme.zIndex.modal + 1,
+                      border: "none",
                       color: "white",
-                      borderColor: "white",
-                      borderRadius: "20px",
                       marginRight: "10px",
+                      maxHeight: "40px",
+                      fontSize: {
+                        sm: "12px",
+                        md: "14px",
+                      },
+                      "&:hover": {
+                        border: "none",
+                      },
                     }}
                     onClick={(event) => {
                       setAnchorEl(event.currentTarget);
@@ -262,6 +293,11 @@ function Header(props) {
                     }}
                     startIcon={item.icon}
                     className="Header__right__item"
+                    onMouseEnter={(event) => {
+                      setAnchorEl(event.currentTarget);
+                      setMenuName(item.name);
+                    }}
+                    onMouseLeave={handleClose}
                   >
                     {item.name}
                   </Button>
@@ -269,6 +305,7 @@ function Header(props) {
                     <Menu
                       id={`${item.name}-menu`}
                       anchorEl={anchorEl}
+                      keepMounted={true}
                       open={Boolean(anchorEl)}
                       onClose={() => {
                         setAnchorEl(null);
@@ -276,6 +313,16 @@ function Header(props) {
                       }}
                       MenuListProps={{
                         "aria-labelledby": "basic-button",
+                        onMouseEnter: handleMenuEnter,
+                        onMouseLeave: handleMenuClose,
+                      }}
+                      anchorOrigin={{
+                        vertical: "bottom",
+                        horizontal: "center",
+                      }}
+                      transformOrigin={{
+                        vertical: "top",
+                        horizontal: "center",
                       }}
                     >
                       {item.options.map((option, index) => {
@@ -285,10 +332,8 @@ function Header(props) {
                             <MenuItem
                               key={index}
                               onClick={() => {
-                                dispatch(logout());
-                                setAuthLocal(null);
                                 setAnchorEl(null);
-                                navigate(option.link);
+                                handleLogout();
                               }}
                             >
                               <Button color="error" startIcon={<LogoutIcon />}>
@@ -301,6 +346,7 @@ function Header(props) {
                             key={index}
                             onClick={() => {
                               setAnchorEl(null);
+                              setMenuName(null);
                               navigate(option.link);
                             }}
                           >

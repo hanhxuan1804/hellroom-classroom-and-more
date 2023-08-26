@@ -24,8 +24,7 @@ function SlideView(props) {
   useEffect(() => {
     window.addEventListener("resize", resizeChart);
   }, []);
-  //props.data?.slide_listAnswer;
-  const data = props.slide.slide_listAnswer;
+  const data = props.slide?.options;
   return (
     <div
       style={{
@@ -57,12 +56,12 @@ function SlideView(props) {
           textAlign={"center"}
           p={1}
         >
-          {props.slide.slide_question}
+          {props.slide.question}
         </Typography>
         <BarChart data={data} width={chartSize.width} height={chartSize.height}>
-          <XAxis dataKey="answer" stroke="#778899" />
+          <XAxis dataKey="option" stroke="#778899" />
           <YAxis />
-          <Tooltip wrapperStyle={{ width: 100, backgroundColor: "#ccc" }} />
+          <Tooltip wrapperStyle={{  backgroundColor: "#ccc" }} />
           <Legend
             width={100}
             wrapperStyle={{
@@ -75,7 +74,7 @@ function SlideView(props) {
             }}
           />
           <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-          <Bar dataKey="Count" fill="#778899" barSize={30} />
+          <Bar dataKey="count" fill="#778899" barSize={30} />
         </BarChart>
       </div>
     </div>

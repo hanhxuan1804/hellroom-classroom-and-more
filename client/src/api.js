@@ -60,12 +60,14 @@ export const getAllPosts = () => api.get(`/posts`);
 
 export const getPresentations = (payload) => api.get(`/presentation`, payload);
 export const getPresentation = (payload) =>
-  api.get(`/presentation/${payload}`);
+  api.get(`/presentation/get-presentation/${payload}`);
 export const createPresentation = (payload) =>
-  api.post(`/presentation/create`, payload);
+  api.post(`/presentation/create-presentation`, payload);
 export const updatePresentation = (payload) =>
-  api.put(`/presentation/update`, payload);
+  api.put(`/presentation/update-presentation`, payload);
 export const deletePresentation = (payload) =>
-  api.delete(`/presentation/delete`, payload);
+  api.delete(`/presentation/delete-presentation`, payload);
+  export const updatePresentationSlides = (payload) =>
+  api.put(`/presentation/update-presentation-slides`, payload);
 
 export default api;

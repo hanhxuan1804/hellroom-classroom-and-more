@@ -1,22 +1,17 @@
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   Box,
-  Card,
-  CardContent,
-  CardMedia,
   Container,
   Typography,
-  Avatar,
   Input,
   Grid,
   } from "@mui/material";
 import { useSelector } from "react-redux";
 import { groupsS } from "../../redux/selector";
+import GroupCard from "../../component/groups/GroupCard";
 
 
 const GroupListPage = () => {
-  const navigate = useNavigate();
   const groups = useSelector(groupsS).groups;
   const [GroupsShow, setGroupsShow] = useState(groups);
   useEffect(() => {
@@ -65,57 +60,7 @@ const GroupListPage = () => {
         alignItems="center"
       >
         {GroupsShow.map((group) => (
-          <Card
-            key={group._id}
-            sx={{
-              maxWidth: 250,
-              minWidth: 250,
-              mr: 2,
-              mb: 2,
-              cursor: "pointer",
-              ":hover": {
-                boxShadow: 4,
-                transition: "box-shadow 0.3s ease-in-out",
-                "& .MuiCardMedia-root": {
-                  transform: "scale(1.1)",
-                  transition: "transform 0.3s ease-in-out",
-                },
-              },
-            }}
-            onClick={() => {
-              navigate(`/groups/${group._id}`);
-            }}
-          >
-            <CardMedia
-              component="img"
-              height="140"
-              image={group.background}
-              alt="random"
-            />
-            <CardContent>
-              <Typography gutterBottom variant="h5" component="div">
-                {group.name}
-              </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  fontStyle={"italic"}
-                  fontWeight={"bold"}
-                >
-                  {group.description}
-                </Typography>
-                <Avatar alt="avatar" src={group.ownerData.avatar} />
-              </Box>
-            </CardContent>
-          </Card>
+          <GroupCard group={group} key={group._id} />
         ))}
       </Box>
     </Container>

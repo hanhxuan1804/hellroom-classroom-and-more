@@ -1,10 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { useState } from "react";
 import {
-  Backdrop,
   Box,
   Button,
-  CircularProgress,
   Divider,
   FormControl,
   FormHelperText,
@@ -14,11 +12,12 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcons from "@mui/icons-material/Add";
+import { useNavigate } from "react-router-dom";
 
 const SlideEdit = (props) => {
-  const { slide, setSlide, updateSlide, discardChanges } = props;
+  const { slide, setSlide } = props;
+  const navigate = useNavigate();
   const [slideData, setSlideData] = useState(slide);
-  const [backDropOpen, setBackDropOpen] = useState(false);
   const listAnswerScrollRef = useRef(null);
 
   useEffect(() => {
@@ -27,7 +26,7 @@ const SlideEdit = (props) => {
   useEffect(() => {
     listAnswerScrollRef.current.scrollTop =
       listAnswerScrollRef.current.scrollHeight;
-  }, [slideData.slide_listAnswer]);
+  }, [slideData.options]);
   return (
     <Box>
       {/* <Typography
@@ -61,20 +60,20 @@ const SlideEdit = (props) => {
           </Typography>
           <OutlinedInput
             size="small"
-            value={slideData.slide_question}
+            value={slideData.question}
             onChange={(e) =>
-              setSlide({ ...slideData, slide_question: e.target.value })
+              setSlide({ ...slideData, question: e.target.value })
             }
             placeholder={"Enter your question"}
             multiline
           />
 
-          <FormHelperText error={slideData.slide_question === ""}>
-            {slideData.slide_question === "" ? "*Question is required" : ""}
+          <FormHelperText error={slideData.question === ""}>
+            {slideData.question === "" ? "*Question is required" : ""}
           </FormHelperText>
         </FormControl>
         <Typography fontSize={"1rem"} fontWeight={"bold"}>
-          List Answer:
+          List Options:
         </Typography>
         <div
           ref={listAnswerScrollRef}
@@ -84,11 +83,11 @@ const SlideEdit = (props) => {
             scrollBehavior: "smooth",
           }}
         >
-          {slideData.slide_listAnswer.map((item, index) => (
+          {slideData.options.map((item, index) => (
             <FormControl key={index}
             >
               <Typography fontSize={"0.8rem"} fontWeight={"bold"}>
-                Answer {index + 1}:
+                Option {index + 1}:
               </Typography>
               <div
                 style={{
@@ -99,29 +98,29 @@ const SlideEdit = (props) => {
               >
                 <OutlinedInput
                   size="small"
-                  value={item.answer}
+                  value={item.option}
                   onChange={(e) => {
-                    let newList = [...slideData.slide_listAnswer];
-                    newList[index].answer = e.target.value;
-                    setSlide({ ...slideData, slide_listAnswer: newList });
+                    let newList = [...slideData.options];
+                    newList[index].option = e.target.value;
+                    setSlide({ ...slideData, options: newList });
                   }}
-                  placeholder={"Enter your answer"}
+                  placeholder={"Enter your option"}
                   multiline
                 />
                 <IconButton
                   variant="contained"
                   color="error"
                   onClick={() => {
-                    let newList = [...slideData.slide_listAnswer];
+                    let newList = [...slideData.options];
                     newList.splice(index, 1);
-                    setSlide({ ...slideData, slide_listAnswer: newList });
+                    setSlide({ ...slideData, options: newList });
                   }}
                 >
                   <DeleteIcon />
                 </IconButton>
               </div>
-              <FormHelperText error={item.answer === ""}>
-                {item.answer === "" ? "*Answer is required" : ""}
+              <FormHelperText error={item.option === ""}>
+                {item.option === "" ? "*Answer is required" : ""}
               </FormHelperText>
             </FormControl>
           ))}
@@ -129,9 +128,9 @@ const SlideEdit = (props) => {
             variant="contained"
             color="primary"
             onClick={() => {
-              let newList = [...slideData.slide_listAnswer];
-              newList.push({ answer: "", Count: 0 });
-              setSlide({ ...slideData, slide_listAnswer: newList });
+              let newList = [...slideData.options];
+              newList.push({ option: "", count: 0 });
+              setSlide({ ...slideData, options: newList });
             }}
             sx={{ marginTop: "10px", borderRadius: "10px", width: "100%" }}
           >
@@ -164,10 +163,10 @@ const SlideEdit = (props) => {
               },
             }}
             onClick={() => {
-              discardChanges();
+              navigate("/presentation");
             }}
           >
-            Discard
+            Cancle
           </Button>
           <Button
             type="submit"
@@ -184,21 +183,11 @@ const SlideEdit = (props) => {
               },
             }}
             onClick={() => {
-              setBackDropOpen(true);
-              updateSlide(slideData);
-              setTimeout(() => {
-                setBackDropOpen(false);
-              }, 1000);
-            }}
+                props.savePresentation();
+              }}
           >
             Save
           </Button>
-          <Backdrop
-            sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-            open={backDropOpen}
-          >
-            <CircularProgress color="inherit" />
-          </Backdrop>
         </div>
       </div>
     </Box>

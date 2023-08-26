@@ -72,9 +72,9 @@ function CreateGroupPage() {
     handleOpen();
   }, []);
   const handleClose = (event, reason) => {
-    if (reason && reason === "backdropClick" && reason === "escapeKeyDown")
+    if (reason && (reason === "backdropClick" || reason === "escapeKeyDown"))
       return;
-    setOpen(false);
+    //setOpen(false);
     navigate("/groups/mygroups");
   };
   const handleCancel = () => {

@@ -16,18 +16,34 @@ const SlideSchema = new mongoose.Schema({
     },
     options: [
         {
-            type: String,
-            required: true,
+            option: String, count: Number,
         },
     ],
-    answer: {
-        type: String,
-        required: true,
+    presentation: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Presentation",
     },
-    points: {
-        type: Number,
-        required: true,
-    },
+    history: [
+        {
+            presentationTime: {
+                type:Number,
+                required: true,
+            },
+            time: {
+                type: Date,
+                default: Date.now,
+            },
+            members: [
+                {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "User",
+                },
+            ],
+            result: [
+                {option: String, count: Number},
+            ],
+        },
+    ],
     isDeleted: {
         type: Boolean,
         default: false,

@@ -1,218 +1,107 @@
-import React from 'react'
-import { Grid } from '@mui/material'
-import { ListSlide, SlideDetail } from '../../component/presentation'
-import { useState } from 'react'
+import React, { useEffect } from "react";
+import { Grid, Backdrop, CircularProgress } from "@mui/material";
+import { ListSlide, SlideDetail } from "../../component/presentation";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { presentationsS } from "../../redux/selector";
+import { useMutation } from "@tanstack/react-query";
+import { getPresentation, updatePresentationSlides } from "../../api";
+import { useSnackbar } from "notistack";
+import LoadingPage from "../common/LoadingPage";
+import ErrorPage from "../common/ErrorPage";
+import { setPresentations as setPresentationRedux } from "../../redux/slice/presentationSlice";
+import ObjectId from "bson-objectid";
 
-const sampledata = [
-  {
-      "id": 1,
-      "slide_question": "What is the best programming language?",
-      "slide_listAnswer": [
-          {
-              "answer": "Python",
-              "Count": 10
-          },
-          {
-              "answer": "Java",
-              "Count": 5
-          },
-          {
-              "answer": "JavaScript",
-              "Count": 3
-          }
-      ],
-      "name": "Slide 1",
-      "type": "multichoice"
-  },
-  {
-      "id": 2,
-      "slide_question": "Which mobile operating system do you prefer?",
-      "slide_listAnswer": [
-          {
-              "answer": "Android",
-              "Count": 8
-          },
-          {
-              "answer": "iOS",
-              "Count": 7
-          },
-          {
-              "answer": "Other",
-              "Count": 2
-          }
-      ],
-      "name": "Slide 2",
-      "type": "multichoice"
-  },
-  {
-      "id": 3,
-      "slide_question": "What is your favorite color?",
-      "slide_listAnswer": [
-          {
-              "answer": "Blue",
-              "Count": 12
-          },
-          {
-              "answer": "Red",
-              "Count": 6
-          },
-          {
-              "answer": "Green",
-              "Count": 4
-          }
-      ],
-      "name": "Slide 3",
-      "type": "multichoice"
-  },
-  {
-      "id": 4,
-      "slide_question": "Which genre of movies do you enjoy the most?",
-      "slide_listAnswer": [
-          {
-              "answer": "Action",
-              "Count": 9
-          },
-          {
-              "answer": "Comedy",
-              "Count": 8
-          },
-          {
-              "answer": "Drama",
-              "Count": 3
-          }
-      ],
-      "name": "Slide 4",
-      "type": "multichoice"
-  },
-  {
-      "id": 5,
-      "slide_question": "What is your preferred mode of transportation?",
-      "slide_listAnswer": [
-          {
-              "answer": "Car",
-              "Count": 6
-          },
-          {
-              "answer": "Public transportation",
-              "Count": 9
-          },
-          {
-              "answer": "Bicycle",
-              "Count": 2
-          }
-      ],
-      "name": "Slide 5",
-      "type": "multichoice"
-  },
-  {
-      "id": 6,
-      "slide_question": "Which type of music do you listen to the most?",
-      "slide_listAnswer": [
-          {
-              "answer": "Pop",
-              "Count": 7
-          },
-          {
-              "answer": "Rock",
-              "Count": 6
-          },
-          {
-              "answer": "Hip-hop",
-              "Count": 4
-          }
-      ],
-      "name": "Slide 6",
-      "type": "multichoice"
-  },
-  {
-      "id": 7,
-      "slide_question": "What is your favorite pet?",
-      "slide_listAnswer": [
-          {
-              "answer": "Dog",
-              "Count": 10
-          },
-          {
-              "answer": "Cat",
-              "Count": 6
-          },
-          {
-              "answer": "Fish",
-              "Count": 2
-          }
-      ],
-      "name": "Slide 7",
-      "type": "multichoice"
-  },
-  {
-      "id": 8,
-      "slide_question": "Which sports do you enjoy playing?",
-      "slide_listAnswer": [
-          {
-              "answer": "Football",
-              "Count": 9
-          },
-          {
-              "answer": "Basketball",
-              "Count": 5
-          },
-          {
-              "answer": "Tennis",
-              "Count": 3
-          }
-      ],
-      "name": "Slide 8",
-      "type": "multichoice"
-  },
-  {
-      "id": 9,
-      "slide_question": "What is your favorite season?",
-      "slide_listAnswer": [
-          {
-              "answer": "Summer",
-              "Count": 7
-          },
-          {
-              "answer": "Spring",
-              "Count": 5
-          },
-          {
-              "answer": "Autumn",
-              "Count": 4
-          }
-      ],
-      "name": "Slide 9",
-      "type": "multichoice"
-  },
-  {
-      "id": 10,
-      "slide_question": "Which type of books do you prefer?",
-      "slide_listAnswer": [
-          {
-              "answer": "Fiction",
-              "Count": 8
-          },
-          {
-              "answer": "Non-fiction",
-              "Count": 6
-          },
-          {
-              "answer": "Sci-fi",
-              "Count": 2
-          }
-      ],
-      "name": "Slide 10",
-      "type": "multichoice"
-  }
-]
-
+const sampleSlide = {
+  _id: ObjectId(),
+  name: "Slide 1",
+  type: "multipleChoice",
+  question: "What is the capital of Vietnam?",
+  options: [
+    { option: "Hanoi", count: 10 },
+    { option: "Ho Chi Minh", count: 5 },
+    { option: "Da Nang", count: 3 },
+    { option: "Hue", count: 2 },
+  ],
+};
 
 const EditPresentationPage = () => {
-  const [list, setList] = useState(sampledata)
-  const [selected, setSelected] = useState(list[0])
+  const { enqueueSnackbar } = useSnackbar();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const presentationId = useParams().presentationId;
+  const presentations = useSelector(presentationsS).presentations;
+  const presentationRedux = presentations.find(
+    (presentation) => presentation._id === presentationId
+  );
+  const [list, setList] = useState(null);
+  const [selected, setSelected] = useState(null);
+
+  const mutation = useMutation({
+    mutationFn: getPresentation,
+    onSuccess: (data) => {
+      const presentation = data.data.presentation;
+      const slides = data.data.slides;
+      presentation.slides = slides;
+      dispatch(setPresentationRedux([...presentations, presentation]));
+      if (slides.length === 0) {
+        setList([sampleSlide]);
+        setSelected(sampleSlide);
+        enqueueSnackbar("Presentation is empty the sample slide is added", {
+          variant: "warning",
+        });
+      } else {
+        setList(
+          slides.map((slide) => {
+            return {
+              _id: slide._id,
+              name: slide.name,
+              type: slide.type,
+              question: slide.question,
+              options: slide.options,
+            };
+          })
+        );
+        setSelected(slides[0]);
+      }
+    },
+  });
+  const updateMutation = useMutation({
+    mutationFn: updatePresentationSlides,
+    onSuccess: (data) => {
+      const newPresentation = {
+        ...presentationRedux,
+        slides: data.data.slides,
+      };
+      dispatch(setPresentationRedux([...presentations, newPresentation]));
+      enqueueSnackbar("Presentation is updated", { variant: "success" });
+    },
+    onError: (error) => {
+      enqueueSnackbar(error.message, { variant: "error" });
+    },
+  });
+  useEffect(() => {
+    if (presentationRedux) {
+      const slides = presentationRedux.slides.map((element) => {
+        return {
+          _id: element._id,
+          name: element.name,
+          type: element.type,
+          question: element.question,
+          options: element.options,
+        };
+      });
+      setList([...slides]);
+      setSelected(slides[0]);
+    } else {
+      mutation.mutateAsync(presentationId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const updateSlide = (slide) => {
     const newList = list.map((item) => {
-      if (item.id === slide.id) {
+      if (item._id === slide._id) {
         return slide;
       }
       return item;
@@ -220,19 +109,54 @@ const EditPresentationPage = () => {
     setList(newList);
     setSelected(slide);
   };
+  const handlePresentationShow = () => {
+    savePresentation();
+    navigate(`/presentation/${presentationId}/show`, {
+      state: { slide: selected, list: list },
+    });
+  };
+  const savePresentation = () => {
+    const data = {
+      _id: presentationId,
+      slides: list,
+    };
+    updateMutation.mutateAsync(data);
+  };
+
+  if (mutation.isLoading) return <LoadingPage />;
+  if (mutation.isError) return <ErrorPage error={mutation.error} />;
 
   return (
-    <Grid container  sx={{ maxWidth: "100vw", m: 0, p: 0}}>
-      <Grid item xs={12} md={3}
+    <Grid container sx={{ maxWidth: "100vw", m: 0, p: 0 }}>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={updateMutation.isLoading}
       >
-      <ListSlide list={list} setList={setList} selected={selected} setSelected={setSelected}/>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      <Grid item xs={12} md={3}>
+        {list && (
+          <ListSlide
+            list={list}
+            setList={setList}
+            selected={selected}
+            setSelected={setSelected}
+            handlePresentationShow={handlePresentationShow}
+          />
+        )}
       </Grid>
-      <Grid item xs={12} md={9} >
-        <SlideDetail slide={selected} setSlide={setSelected} updateSlide={updateSlide}/>
+      <Grid item xs={12} md={9}>
+        {selected && (
+          <SlideDetail
+            slide={selected}
+            setSlide={setSelected}
+            updateSlide={updateSlide}
+            savePresentation={savePresentation}
+          />
+        )}
       </Grid>
     </Grid>
+  );
+};
 
-  )
-}
-
-export default EditPresentationPage
+export default EditPresentationPage;

@@ -29,11 +29,14 @@ const groupSlice = createSlice({
         deleteGroup: (state, action) => {
             const id = action.payload;
             state.groups = state.groups.filter((group) => group._id !== id);
+        },
+        clearGroups: (state) => {
+            state.groups = [];
         }
 
     }
 });
 
-export const { setGroups, addGroup, updateGroup, deleteGroup } = groupSlice.actions;
+export const { setGroups, addGroup, updateGroup, deleteGroup , clearGroups} = groupSlice.actions;
 export default groupSlice.reducer;
 

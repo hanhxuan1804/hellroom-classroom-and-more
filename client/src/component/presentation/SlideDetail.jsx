@@ -1,36 +1,50 @@
-import React, { useEffect } from "react";
 import {
   MultiChoiceSlideEdit,
   MultiChoiceSlideView,
 } from "./slide/multichoice";
 import { Grid } from "@mui/material";
+import ErrorPage from "../../pages/common/ErrorPage";
+
+const SlideView = (props) => {
+  const type = props.type;
+  if (type === "multipleChoice") {
+    return <MultiChoiceSlideView {...props} />;
+  }
+  // add more slide type here
+
+  return <ErrorPage />;
+};
+const SlideEdit = (props) => {
+  const type = props.type;
+  if (type === "multipleChoice") {
+    return <MultiChoiceSlideEdit {...props} />;
+  }
+  // add more slide type here
+
+  return <ErrorPage />;
+};
 
 const SlideDetail = (props) => {
   const { slide, updateSlide } = props;
-  const type = slide.type;
-  const [slideData, setSlideData] = React.useState(JSON.parse(JSON.stringify(slide)));
-  const SlideView = type === "multichoice" ? MultiChoiceSlideView : null;
-  const SlideEdit = type === "multichoice" ? MultiChoiceSlideEdit : null;
-  const discardChanges = () => {
-    setSlideData(JSON.parse(JSON.stringify(slide)));
-  };
-  useEffect(() => {
-    setSlideData(JSON.parse(JSON.stringify(slide)));
-  }, [slide]);
-  if (type === "shortanswer") {
-    return <div>Short Answer</div>;
-  }
+
   return (
-    <Grid container spacing={2} sx={{
-      height: "100%",
-    }}>
+    <Grid
+      container
+      spacing={2}
+      sx={{
+        height: "100%",
+      }}
+    >
       <Grid item xs={12} md={8}>
-        <SlideView slide={slideData} />
+        <SlideView type={slide.type} slide={slide} />
       </Grid>
       <Grid item xs={12} md={4}>
-        <SlideEdit slide={slideData} setSlide={setSlideData} updateSlide={updateSlide}
-          discardChanges={discardChanges}
-         />
+        <SlideEdit
+          type={slide.type}
+          slide={slide}
+          setSlide={updateSlide}
+          savePresentation={props.savePresentation}
+        />
       </Grid>
     </Grid>
   );

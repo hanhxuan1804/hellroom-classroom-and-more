@@ -6,52 +6,54 @@ import {
   Typography,
   Menu,
   MenuItem,
-  Tooltip,
-  Box,
   useMediaQuery,
   Divider,
   IconButton,
 } from "@mui/material";
 import SlideShowIcon from "@mui/icons-material/Slideshow";
+import BarChartIcon from "@mui/icons-material/BarChart";
 import React from "react";
 import { useState, useEffect } from "react";
 import { ReactSortable } from "react-sortablejs";
 import Dropdown from "../Dropdown";
+import ObjectID from "bson-objectid";
+import { useSnackbar } from "notistack";
 
 const SlideTemplate = {
-  list: ["Multiple Choice", "Short Answer"],
+  list: ["Multiple Choice"],
   "Multiple Choice": {
-    id: 1,
-    name: "Slide 1",
-    type: "multichoice",
-    slide_question: "Your question here",
-    slide_listAnswer: [
+    name: "Slide Name",
+    type: "multipleChoice",
+    question: "Your question here",
+    options: [
       {
-        answer: "Answer 1",
-        Count: 5,
+        option: "Option 1",
+        count: 5,
       },
       {
-        answer: "Answer 2",
-        Count: 3,
+        option: "Option 2",
+        count: 3,
       },
       {
-        answer: "Answer 3",
-        Count: 2,
+        option: "Option 3",
+        count: 2,
       },
     ],
   },
-  "Short Answer": {
-    id: 1,
-    name: "Slide 1",
-    type: "shortanswer",
-    slide_question: "Your question here",
-    slide_listAnswer: [],
-  },
+  // "Short Answer": {
+  //   id: 1,
+  //   name: "Slide 1",
+  //   type: "shortoption",
+  //   question: "Your question here",
+  //   options: [],
+  // },
 };
 
 const ListSlide = (props) => {
-  const { list, setList, selected, setSelected } = props;
+  const { setList, selected, setSelected } = props;
   const listSlideRef = React.useRef(null);
+  const { enqueueSnackbar } = useSnackbar();
+  const list = Object.preventExtensions(props.list);
   const [isAddSlide, setIsAddSlide] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
   const media = useMediaQuery("(max-width: 900px)");
@@ -67,6 +69,7 @@ const ListSlide = (props) => {
   const handleContextMenuDoubleClick = (event, item, index) => {
     event.preventDefault();
     const newItems = { ...item, name: `${item.name} - Copy` };
+    newItems._id = ObjectID();
     let newList = [...list];
     newList.splice(index + 1, 0, newItems);
     setList(newList);
@@ -75,6 +78,13 @@ const ListSlide = (props) => {
   };
   const handleContextMenuDeleteClick = (event, item, index) => {
     event.preventDefault();
+    if (list.length === 1) {
+      setContextMenu(null);
+      enqueueSnackbar("The presentation must have at least one slide", {
+        variant: "error",
+      });
+      return;
+    }
     let newList = [...list];
     newList.splice(index, 1);
     setList(newList);
@@ -85,13 +95,13 @@ const ListSlide = (props) => {
     setIsAddSlide(true);
     const newSlide = JSON.parse(JSON.stringify(SlideTemplate[value]));
     newSlide.name = `Slide ${list.length + 1}`;
-    newSlide.id = list.length + 1;
+    newSlide._id = ObjectID();
     setList([...list, newSlide]);
     setSelected(newSlide);
   };
   useEffect(() => {
-    if(isAddSlide === false) return;
-    if (media ) {
+    if (isAddSlide === false) return;
+    if (media) {
       listSlideRef.current.scrollLeft = listSlideRef.current.scrollWidth;
     } else {
       listSlideRef.current.scrollTop = listSlideRef.current.scrollHeight;
@@ -102,23 +112,26 @@ const ListSlide = (props) => {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <Dropdown
-        name="Add Slide"
-        listChild={SlideTemplate.list}
-        handleChildClick={handleAddSlide}
-      />
-      <IconButton 
-      variant="contained"
-      color="success"
-      sx={{
-        mt: "15px",
-        borderRadius: "15px",
-        height: "40px",
-        width: "40px",
-      }}
-      onClick={() => {console.log("presentclick")}}>
-        <SlideShowIcon />
-      </IconButton>
+        <Dropdown
+          name="Add Slide"
+          listChild={SlideTemplate.list}
+          handleChildClick={handleAddSlide}
+        />
+        <IconButton
+          variant="contained"
+          color="success"
+          sx={{
+            mt: "15px",
+            borderRadius: "15px",
+            height: "40px",
+            width: "40px",
+          }}
+          onClick={() => {
+            props.handlePresentationShow();
+          }}
+        >
+          <SlideShowIcon />
+        </IconButton>
       </div>
       <List
         ref={listSlideRef}
@@ -140,14 +153,15 @@ const ListSlide = (props) => {
           }}
         >
           {list.map((slide, index) => (
-            <ListItem key={index}
+            <ListItem
+              key={index}
               sx={{
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
               }}
             >
-              <Tooltip
+              {/* <Tooltip
                 title={
                   <Box sx={{ display: "flex", flexDirection: "column" }}>
                     <Typography fontSize={20} fontWeight="bold" color="white">
@@ -155,48 +169,72 @@ const ListSlide = (props) => {
                     </Typography>
                     <Typography fontSize={16} color="white">
                       Type:{" "}
-                      {slide.type === "multichoice"
+                      {slide.type === "multipleChoice"
                         ? "Multiple Choice"
                         : "Short Answer"}
                     </Typography>
                   </Box>
                 }
                 placement="right"
+              > */}
+              <Card
+                sx={{
+                  width: media ? 250 : "100%",
+                  maxWidth: 250,
+                  minHeight: 120,
+                  borderRadius: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "3",
+                  cursor: "pointer",
+                  border: selected === slide ? "2px solid #000" : "none",
+                }}
+                onClick={() => {
+                  setSelected(list[index]);
+                }}
+                onContextMenu={(event) =>
+                  handleContextMenu(event, slide, index)
+                }
               >
-                <Card
+                <CardContent
                   sx={{
-                    width: media ? 250 : "100%",
-                    maxWidth: 250,
-                    minHeight: 120,
-                    borderRadius: 0,
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    boxShadow: "3",
-                    cursor: "pointer",
-                    border: selected === slide ? "2px solid #000" : "none",
+                    width: "100%",
+                    height: "100%",
                   }}
-                  onClick={() => {
-                    setSelected(list[index]);
-                  }}
-                  onContextMenu={(event) =>
-                    handleContextMenu(event, slide, index)
-                  }
                 >
-                  <CardContent>
-                    <Typography
-                      fontSize={20}
-                      fontWeight="bold"
-                      color="text.secondary"
-                    >
-                      {slide.name.length > 20
-                        ? slide.name.substring(0, 20) + "..."
-                        : slide.name}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Tooltip>
+                  {slide.type === "multipleChoice" ? (
+                    <BarChartIcon
+                      sx={{
+                        fontSize: 50,
+                        color: "text.secondary",
+                      }}
+                    />
+                  ) : (
+                    <SlideShowIcon
+                      sx={{
+                        fontSize: 50,
+                        color: "text.secondary",
+                      }}
+                    />
+                  )}
+                  <Typography
+                    fontSize={20}
+                    fontWeight="bold"
+                    color="text.secondary"
+                  >
+                    {slide.name.length > 20
+                      ? slide.name.substring(0, 20) + "..."
+                      : slide.name}
+                  </Typography>
+                </CardContent>
+              </Card>
+              {/* </Tooltip> */}
             </ListItem>
           ))}
           <Menu
