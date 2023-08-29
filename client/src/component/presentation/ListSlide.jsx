@@ -18,6 +18,8 @@ import { ReactSortable } from "react-sortablejs";
 import Dropdown from "../Dropdown";
 import ObjectID from "bson-objectid";
 import { useSnackbar } from "notistack";
+import { ArrowBack } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 const SlideTemplate = {
   list: ["Multiple Choice"],
@@ -53,6 +55,7 @@ const ListSlide = (props) => {
   const { setList, selected, setSelected } = props;
   const listSlideRef = React.useRef(null);
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
   const list = Object.preventExtensions(props.list);
   const [isAddSlide, setIsAddSlide] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
@@ -112,11 +115,27 @@ const ListSlide = (props) => {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <Dropdown
-          name="Add Slide"
-          listChild={SlideTemplate.list}
-          handleChildClick={handleAddSlide}
-        />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <IconButton
+            onClick={() => {
+              navigate("/presentation/mypresentations");
+            }}
+          >
+            <ArrowBack />
+          </IconButton>
+          <Dropdown
+            name="Add Slide"
+            listChild={SlideTemplate.list}
+            handleChildClick={handleAddSlide}
+          />
+        </div>
         <IconButton
           variant="contained"
           color="success"

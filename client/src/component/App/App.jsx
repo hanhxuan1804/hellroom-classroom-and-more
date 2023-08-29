@@ -4,7 +4,7 @@ import { ActiveEmailPage, LoginPage, RegisterPage } from "../../pages/authentica
 import { ProfilePageLayout, ProtectedLayout } from "../layout";
 import { ProfilePage, EditProfilePage } from "../../pages/user";
 import { GroupListPage, GroupDetailsPage, CreateGroupPage, JoinGroupPage  } from "../../pages/group";
-import { CreatePresentationPage, EditPresentationPage, ShowPresentationPage } from "../../pages/presentation";
+import { CreatePresentationPage, EditPresentationPage, ShowPresentationPage, PresentationsPage } from "../../pages/presentation";
 import { HomePage } from "../../pages/home";
 import JoinGroup from "../groups/JoinGroup";
 import useLocalStorage from "../../hooks/useLocalStorage";
@@ -37,6 +37,7 @@ function App() {
           <Route path="create" element={<CreatePresentationPage/>} />
           <Route path=":presentationId/show" element={<ShowPresentationPage/>} />
           <Route path=":presentationId/edit" element={<EditPresentationPage/>} />
+          <Route path="mypresentations" element={<PresentationsPage/>} />
         </Route>
 
         <Route path="user" element={<ProfilePageLayout/>} exact>

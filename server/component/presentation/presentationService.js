@@ -1,5 +1,33 @@
 const Presentation = require("../../mongooseModel/Presentation");
 const Slide = require("../../mongooseModel/Slide");
+const Group = require("../../mongooseModel/Group");
+
+exports.getPresentations = async (req, res) => {
+  const userId = req.user._id;
+  try {
+    const presentations = await Presentation.find({
+      owner: userId,
+      isDeleted: false,
+    });
+    if (presentations.length !== 0) {
+      for (const presentation of presentations) {
+        const slides = await Slide.find({
+          presentation: presentation._id,
+          isDeleted: false,
+        });
+        presentation.slides = slides;
+        const group = await Group.findById(presentation.group);
+        presentation.group = group;
+      }
+    }
+    res.status(200).send({
+      presentations: presentations,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: error.message });
+  }
+};
 
 exports.createPresentation = async (req, res) => {
   try {

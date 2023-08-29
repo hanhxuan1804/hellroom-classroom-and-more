@@ -1,5 +1,14 @@
 import React, { useEffect } from "react";
-import { Grid, Backdrop, CircularProgress } from "@mui/material";
+import {
+  Grid,
+  Backdrop,
+  CircularProgress,
+  IconButton,
+  Typography,
+  Box,
+  useMediaQuery,
+} from "@mui/material";
+import { Edit } from "@mui/icons-material";
 import { ListSlide, SlideDetail } from "../../component/presentation";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -28,6 +37,7 @@ const sampleSlide = {
 
 const EditPresentationPage = () => {
   const { enqueueSnackbar } = useSnackbar();
+  const media = useMediaQuery("(min-width:600px)");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const presentationId = useParams().presentationId;
@@ -127,35 +137,77 @@ const EditPresentationPage = () => {
   if (mutation.isError) return <ErrorPage error={mutation.error} />;
 
   return (
-    <Grid container sx={{ maxWidth: "100vw", m: 0, p: 0 }}>
-      <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={updateMutation.isLoading}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
-      <Grid item xs={12} md={3}>
-        {list && (
-          <ListSlide
-            list={list}
-            setList={setList}
-            selected={selected}
-            setSelected={setSelected}
-            handlePresentationShow={handlePresentationShow}
-          />
-        )}
+    <div>
+      {!media && (
+        <Box
+          display="flex"
+          flexDirection="row"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Typography
+            fontFamily={"Montserrat"}
+            fontWeight={700}
+            fontSize={24}
+            sx={{ mt: 2 }}
+          >
+            {presentationRedux && presentationRedux.name}
+          </Typography>
+          <IconButton onClick={() => console.log("edit")} sx={{ mt: 2 }}>
+            <Edit />
+          </IconButton>
+        </Box>
+      )}
+      <Grid container sx={{ maxWidth: "100vw", m: 0, p: 0 }}>
+        <Backdrop
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={updateMutation.isLoading}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+        <Grid item xs={12} md={3}>
+          {list && (
+            <ListSlide
+              list={list}
+              setList={setList}
+              selected={selected}
+              setSelected={setSelected}
+              handlePresentationShow={handlePresentationShow}
+            />
+          )}
+        </Grid>
+        <Grid item xs={12} md={9}>
+          {media && (
+            <Box
+              display="flex"
+              flexDirection="row"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Typography
+                fontFamily={"Montserrat"}
+                fontWeight={700}
+                fontSize={24}
+                sx={{ mt: 2 }}
+              >
+                {presentationRedux && presentationRedux.name}
+              </Typography>
+              <IconButton onClick={() => console.log("edit")} sx={{ mt: 2 }}>
+                <Edit />
+              </IconButton>
+            </Box>
+          )}
+          {selected && (
+            <SlideDetail
+              slide={selected}
+              setSlide={setSelected}
+              updateSlide={updateSlide}
+              savePresentation={savePresentation}
+            />
+          )}
+        </Grid>
       </Grid>
-      <Grid item xs={12} md={9}>
-        {selected && (
-          <SlideDetail
-            slide={selected}
-            setSlide={setSelected}
-            updateSlide={updateSlide}
-            savePresentation={savePresentation}
-          />
-        )}
-      </Grid>
-    </Grid>
+    </div>
   );
 };
 

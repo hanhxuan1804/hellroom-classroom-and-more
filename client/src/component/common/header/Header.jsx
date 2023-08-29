@@ -74,7 +74,7 @@ function Header(props) {
       options: [
         {
           name: "My Presentations",
-          link: "/presentation/my",
+          link: "/presentation/mypresentations",
         },
         {
           name: "Create Presentation",

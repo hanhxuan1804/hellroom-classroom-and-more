@@ -35,7 +35,7 @@ const Dropdown = (props) => {
             color: "#fff",
             opacity: 0.8,
           },
-          borderRadius: "15px",
+          borderRadius: "20px",
          }
         }
       >

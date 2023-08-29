@@ -58,7 +58,7 @@ export const forgotPassword = (payload) =>
 export const resetPassword = (payload) => api.post(`/reset-password`, payload);
 export const getAllPosts = () => api.get(`/posts`);
 
-export const getPresentations = (payload) => api.get(`/presentation`, payload);
+export const getPresentations = (payload) => api.get(`/presentation/get-presentations`, payload);
 export const getPresentation = (payload) =>
   api.get(`/presentation/get-presentation/${payload}`);
 export const createPresentation = (payload) =>

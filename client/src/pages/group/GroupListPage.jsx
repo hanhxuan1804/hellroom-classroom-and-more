@@ -1,15 +1,8 @@
 import { useEffect, useState } from "react";
-import {
-  Box,
-  Container,
-  Typography,
-  Input,
-  Grid,
-  } from "@mui/material";
+import { Box, Container, Typography, Input, Grid } from "@mui/material";
 import { useSelector } from "react-redux";
 import { groupsS } from "../../redux/selector";
 import GroupCard from "../../component/groups/GroupCard";
-
 
 const GroupListPage = () => {
   const groups = useSelector(groupsS).groups;
@@ -17,7 +10,6 @@ const GroupListPage = () => {
   useEffect(() => {
     setGroupsShow([...groups]);
   }, [groups]);
-
   return (
     <Container>
       <Grid container alignItems="center" justifyContent="space-between">
@@ -53,16 +45,22 @@ const GroupListPage = () => {
           />
         </Grid>
       </Grid>
-      <Box
-        display="flex"
-        flexWrap="wrap"
-        justifyContent="flex-start"
-        alignItems="center"
-      >
-        {GroupsShow.map((group) => (
-          <GroupCard group={group} key={group._id} />
-        ))}
-      </Box>
+      {GroupsShow.length !== 0 ? (
+        <Box
+          display="flex"
+          flexWrap="wrap"
+          justifyContent="flex-start"
+          alignItems="center"
+        >
+          {GroupsShow.map((group) => (
+            <GroupCard group={group} key={group._id} />
+          ))}
+        </Box>
+      ) : (
+        <Typography variant="h6" sx={{ mt: 2, mb: 2 }}>
+          No Groups
+        </Typography>
+      )}
     </Container>
   );
 };

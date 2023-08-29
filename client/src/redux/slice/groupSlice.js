@@ -15,8 +15,8 @@ const groupSlice = createSlice({
             state.groups.push(action.payload);
         },
         updateGroup: (state, action) => {
-            const { id, name, description, background } = action.payload;
-            const existingGroup = state.groups.find((group) => group.id === id);
+            const { _id, name, description, background } = action.payload;
+            const existingGroup = state.groups.find((group) => group._id === _id);
             if (existingGroup) {
                 existingGroup.name = name;
                 existingGroup.description = description;
