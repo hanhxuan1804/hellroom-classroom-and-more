@@ -128,7 +128,16 @@ const EditPresentationPage = () => {
   const savePresentation = () => {
     const data = {
       _id: presentationId,
-      slides: list,
+      slides: list.map((item, index) => {
+        return {
+          _id: item._id,
+          name: item.name,
+          type: item.type,
+          question: item.question,
+          options: item.options,
+          index: index,
+        };
+      }),
     };
     updateMutation.mutateAsync(data);
   };

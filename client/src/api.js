@@ -1,9 +1,8 @@
 import axios from "axios";
-
-
+import { API_URL } from "./config";
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
+  baseURL: `${API_URL}/api`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -58,7 +57,8 @@ export const forgotPassword = (payload) =>
 export const resetPassword = (payload) => api.post(`/reset-password`, payload);
 export const getAllPosts = () => api.get(`/posts`);
 
-export const getPresentations = (payload) => api.get(`/presentation/get-presentations`, payload);
+export const getPresentations = (payload) =>
+  api.get(`/presentation/get-presentations`, payload);
 export const getPresentation = (payload) =>
   api.get(`/presentation/get-presentation/${payload}`);
 export const createPresentation = (payload) =>
@@ -67,7 +67,11 @@ export const updatePresentation = (payload) =>
   api.put(`/presentation/update-presentation`, payload);
 export const deletePresentation = (payload) =>
   api.delete(`/presentation/delete-presentation`, payload);
-  export const updatePresentationSlides = (payload) =>
+export const updatePresentationSlides = (payload) =>
   api.put(`/presentation/update-presentation-slides`, payload);
+export const showPresentation = (payload) =>
+  api.post(`/presentation/show-presentation`, payload);
+export const joinPresentation = (payload) =>
+  api.post(`/presentation/join-presentation`, payload);
 
 export default api;

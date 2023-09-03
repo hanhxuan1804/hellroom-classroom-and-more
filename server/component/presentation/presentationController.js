@@ -5,6 +5,8 @@ router.get('/get-presentations', presentationSevice.getPresentations);
 router.post('/create-presentation', presentationSevice.createPresentation);
 router.get('/get-presentation/:presentationId', presentationSevice.getPresentation);
 router.put('/update-presentation-slides', presentationSevice.updatePresentationSlides);
+router.post('/show-presentation', presentationSevice.showPresentation);
+router.post('/join-presentation', presentationSevice.joinPresentation);
 
 
 // router.get('/get-presentation/:presentationId', presentationSevice.getPresentation);

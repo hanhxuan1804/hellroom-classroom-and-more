@@ -142,6 +142,10 @@ function Header(props) {
     }
   };
 
+  const [presentationCode, setPresentationCode] = useState("");
+  const handleJoinPresentation = () => {
+    navigate(`/presentation/${presentationCode}/view`);
+  };
   return (
     <ThemeProvider theme={theme}>
       <div className="Header">
@@ -155,9 +159,7 @@ function Header(props) {
           </div>
           <div className="Header__joinbox">
             <TextField
-              id="outlined-basic"
-              label="Presentation Code"
-              variant="outlined"
+              id="standard-basic"
               color="primary"
               size="small"
               autoComplete="off"
@@ -170,6 +172,9 @@ function Header(props) {
                   borderColor: "black",
                 },
               }}
+              placeholder="Presentation code"
+              value={presentationCode}
+              onChange={(e) => setPresentationCode(e.target.value)}
             />
             <Button
               variant="contained"
@@ -180,6 +185,7 @@ function Header(props) {
                 borderColor: "#0b5c6d",
               }}
               size="small"
+              onClick={handleJoinPresentation}
             >
               Join
             </Button>

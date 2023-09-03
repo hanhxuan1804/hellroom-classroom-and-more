@@ -1,6 +1,7 @@
 const Presentation = require("../../mongooseModel/Presentation");
 const Slide = require("../../mongooseModel/Slide");
 const Group = require("../../mongooseModel/Group");
+const PresentationHistory = require("../../mongooseModel/PresentationHistory");
 
 exports.getPresentations = async (req, res) => {
   const userId = req.user._id;
@@ -39,6 +40,7 @@ exports.createPresentation = async (req, res) => {
     const presentation = await Presentation.create(data);
     const sampleSlide = {
       name: "Sample Slide",
+      index: 0,
       type: "multipleChoice",
       question: "Sample Question",
       options: [
@@ -126,6 +128,112 @@ exports.updatePresentationSlides = async (req, res) => {
       slides: updatedSlides,
     });
   } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
+exports.showPresentation = async (req, res) => {
+  const data = req.body;
+
+  try {
+    const presentationHistorys = await PresentationHistory.find({
+      presentationId: data.presentationId,
+      onShow: true,
+    });
+
+    let presentationHistory;
+
+    if (presentationHistorys.length > 1) {
+      presentationHistory = presentationHistorys.pop(); // Get the last element
+      presentationHistorys.forEach(async (history) => {
+        history.onShow = false;
+        await history.save();
+      });
+    } else {
+      presentationHistory = presentationHistorys[0];
+    }
+
+    if (!presentationHistory) {
+      const presentation = await Presentation.findById(data.presentationId);
+
+      if (!presentation) {
+        return res.status(404).send({ message: 'Presentation not found' });
+      }
+
+      const slides = await Slide.find({
+        presentation: data.presentationId,
+        isDeleted: false,
+      });
+
+      let code, checkcode;
+      do {
+        code = Math.random().toString(36).substring(2, 7).toUpperCase();
+        checkcode = await PresentationHistory.findOne({
+          code: code,
+          onShow: true,
+        });
+      } while (checkcode);
+
+      const newPresentationHistory = await PresentationHistory.create({
+        presentationId: data.presentationId,
+        code: code,
+        slidesRecord: slides.map((slide) => ({
+          slideId: slide._id,
+          index: slide.index,
+          question: slide.question,
+          type: slide.type,
+          results: slide.options.map((option) => ({
+            option: option.option,
+            count: 0,
+          })),
+          members: [],
+        })),
+        currentSlideIndex: data.currentSlideIndex,
+        onShow: true,
+        joinMembers: [],
+        chats: [],
+      });
+
+      return res.status(200).send({
+        presentationHistory: newPresentationHistory,
+      });
+    }
+
+    presentationHistory.currentSlideIndex = data.currentSlideIndex;
+    await presentationHistory.save();
+
+    return res.status(200).send({ presentationHistory: presentationHistory });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: error.message });
+  }
+};
+
+
+exports.joinPresentation = async (req, res) => {
+  const data = req.body;
+  try {
+    const presentationHistory = await PresentationHistory.findOne({
+      code: data.code,
+      onShow: true,
+    });
+    if (!presentationHistory) {
+      return res.status(404).send({ message: "Presentation not found" });
+    }
+    const currentSlide = presentationHistory.slidesRecord.find(
+      (slide) => slide.index === presentationHistory.currentSlideIndex
+    );
+    if (!currentSlide) {
+      return res.status(404).send({ message: "Slide not found" });
+    }
+    res.status(200).send({
+      currentSlide: currentSlide,
+      presentationId: presentationHistory.presentationId,
+      currentSlideIndex: presentationHistory.currentSlideIndex,
+      totalSlide: presentationHistory.slidesRecord.length,
+    });
+  } catch (error) {
+    console.log(error);
     res.status(500).send({ message: error.message });
   }
 };

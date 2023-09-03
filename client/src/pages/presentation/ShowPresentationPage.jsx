@@ -1,41 +1,82 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import { openFullscreen, closeFullscreen, checkFullscreen } from "./scripts";
-import { Box, IconButton, Typography } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { Box, IconButton, Typography, useMediaQuery } from "@mui/material";
 import {
+  ArrowBack as ArrowBackIcon,
   Face6Rounded,
   Fullscreen,
   FullscreenExit,
   NavigateBefore,
   NavigateNext,
 } from "@mui/icons-material";
-import { getSocket } from "../../context/socket-context";
+import { SocketContext } from "../../context/socket-context";
+import ErrorPage from "../common/ErrorPage";
+import { MultiChoiceSlideShow } from "../../component/presentation/slide/multichoice";
+import { openFullscreen, closeFullscreen, checkFullscreen } from "./scripts";
+import { showPresentation } from "../../api";
+import { useMutation } from "@tanstack/react-query";
+import LoadingPage from "../common/LoadingPage";
 
-const ShowPresentationPage = (props) => {
+const KEY_ARROW_RIGHT = "ArrowRight";
+const KEY_ARROW_LEFT = "ArrowLeft";
+
+const ShowPresentationPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const socket = getSocket();
+  const socket = useContext(SocketContext);
   const { list, slide } = location.state;
   const { presentationId } = useParams();
-  const [currentSlide, setCurrentSlide] = useState(slide || list[0]);
+  const [passcode, setPasscode] = useState();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(
     slide ? list.findIndex((item) => item._id === slide._id) : 0
   );
-
+  const [listSlide, setListSlide] = useState(
+    list.map((item) => ({
+      ...item,
+      options: item.options.map((option) => ({
+        ...option,
+        count: 0,
+      })),
+    }))
+  );
+  const createMutation = useMutation({
+    mutationFn: showPresentation,
+    onSuccess: (data) => {
+      setPasscode(data.data.presentationHistory.code);
+      const sortedList = data.data.presentationHistory.slidesRecord.sort(
+        (a, b) => a.index - b.index
+      );
+      setListSlide(sortedList);
+      setCurrentSlideIndex(data.data.presentationHistory.currentSlideIndex);
+      socket.emit("join", {
+        presentationId: data.data.presentationHistory.presentationId,
+        code: data.data.presentationHistory.code,
+      });
+    },
+  });
   const [numberOfJoiner, setNumberOfJoiner] = useState(0);
-  const [listAnswers, setListAnswers] = useState([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
   const handleNextSlide = () => {
     if (currentSlideIndex === list.length - 1) return;
-    setCurrentSlide(list[currentSlideIndex + 1]);
-    setCurrentSlideIndex(currentSlideIndex + 1);
+    const newIndex = currentSlideIndex + 1;
+    setCurrentSlideIndex((prev) => (prev + 1) % list.length);
+    socket.emit("next", {
+      presentationId,
+      slideId: listSlide[newIndex]._id,
+    });
   };
+
   const handlePreviousSlide = () => {
     if (currentSlideIndex === 0) return;
-    setCurrentSlide(list[currentSlideIndex - 1]);
-    setCurrentSlideIndex(currentSlideIndex - 1);
+    const newIndex = currentSlideIndex - 1;
+    setCurrentSlideIndex((prev) => (prev - 1) % list.length);
+    socket.emit("previous", {
+      presentationId,
+      slideId: listSlide[newIndex]._id,
+    });
   };
+
   const handleFullscreen = () => {
     if (isFullscreen) {
       closeFullscreen("show-presentation-page");
@@ -43,31 +84,75 @@ const ShowPresentationPage = (props) => {
       openFullscreen("show-presentation-page");
     }
   };
+
+  const pressKeyHandler = (e) => {
+    if (e.key === KEY_ARROW_RIGHT) {
+     handleNextSlide();
+    }
+    if (e.key === KEY_ARROW_LEFT) {
+      handlePreviousSlide();
+    }
+  };
+
+
   useEffect(() => {
-    const pressKeyHandler = (e) => {
-      if (e.key === "ArrowRight") {
-        handleNextSlide();
-      }
-      if (e.key === "ArrowLeft") {
-        handlePreviousSlide();
-      }
-    };
+    createMutation.mutate({
+      presentationId,
+      currentSlideIndex,
+    });
+
+    socket.on("joined", (data) => {
+      setNumberOfJoiner(data.numberOfJoiner);
+    });
+
+    socket.on("answerChanged", (data) => {
+      const { currentSlide, currentSlideIndex } = data;
+      setListSlide((prev) => {
+        const newList = [...prev];
+        newList[currentSlideIndex] = currentSlide;
+        return newList;
+      });
+    });
+
+    socket.on("leaved", (data) => {
+      console.log("leaved catched", data);
+      setNumberOfJoiner(data.numberOfJoiner);
+    });
+
     const onFullScreenChange = () => {
       setIsFullscreen(Boolean(checkFullscreen()));
     };
+
+
     document.addEventListener("fullscreenchange", onFullScreenChange);
-    window.addEventListener("keydown", pressKeyHandler);
+    //window.addEventListener("keydown", pressKeyHandler);
     return () => {
-      window.removeEventListener("keydown", () => {});
       document.removeEventListener("fullscreenchange", onFullScreenChange);
+      //window.removeEventListener("keydown", pressKeyHandler);
+
+      socket.emit("end", {
+        presentationId,
+      });
+      socket.off("joined");
+      socket.off("answerChanged");
+      socket.off("leaved");
+
     };
-    //eslint-disable-next-line
+    // eslint-disable-next-line
   }, []);
+
   const handleExit = () => {
     closeFullscreen("show-presentation-page");
     navigate(-1);
   };
-  const passcode = "123456";
+
+  if (createMutation.isLoading) {
+    return <LoadingPage />;
+  }
+  if (createMutation.isError) {
+    return <ErrorPage />;
+  }
+
   return (
     <div
       id="show-presentation-page"
@@ -75,7 +160,10 @@ const ShowPresentationPage = (props) => {
         backgroundColor: "white",
         height: "90vh",
       }}
+      tabIndex={-1}
+      onKeyDown={pressKeyHandler}
     >
+
       <Box
         display="flex"
         justifyContent="space-between"
@@ -99,7 +187,12 @@ const ShowPresentationPage = (props) => {
         </Box>
 
         <Box display="flex" justifyContent="center" alignItems="center">
-          <div>{JSON.stringify(currentSlide)}</div>
+          <SlideView
+            type={
+              listSlide.length !== 0 ? listSlide[currentSlideIndex]?.type : ""
+            }
+            slide={listSlide[currentSlideIndex]}
+          />
         </Box>
         <Box
           display="flex"
@@ -142,6 +235,17 @@ const ShowPresentationPage = (props) => {
       </Box>
     </div>
   );
+};
+
+const SlideView = ({ type, ...props }) => {
+  const media = useMediaQuery("(max-width: 600px)");
+  const widthRatio = media ? 0.9 : 0.5;
+
+  if (type === "multipleChoice") {
+    return <MultiChoiceSlideShow widthRatio={widthRatio} {...props} />;
+  }
+
+  return <ErrorPage />;
 };
 
 export default ShowPresentationPage;

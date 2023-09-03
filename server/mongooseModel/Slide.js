@@ -5,6 +5,10 @@ const SlideSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    index: {
+        type: Number,
+        required: true,
+    },
     type: {
         type: String,
         required: true,
