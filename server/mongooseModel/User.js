@@ -36,7 +36,7 @@ const user = new Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   birthDate: { type: Date},
-  phoneNumber: { type: String, required: true },
+  phoneNumber: { type: String},
   created: { type: Date, default: Date.now },
   updated: { type: Date, default: Date.now },
   active: { type: Boolean, default: false },
