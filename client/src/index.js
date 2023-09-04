@@ -11,6 +11,11 @@ import store from "./redux/store";
 import { Provider } from "react-redux";
 import { SocketContext, getSocket } from "./context/socket-context";
 import { GOOGLE_CLIENT_ID } from "./config";
+import { disableReactDevTools } from "@fvilers/disable-react-devtools";
+
+if (process.env.REACT_APP_NODE_ENV === "production") {
+  disableReactDevTools();
+}
 
 const queryClient = new QueryClient();
 const root = ReactDOM.createRoot(document.getElementById("root"));

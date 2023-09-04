@@ -12,6 +12,7 @@ export default configureStore({
         path: pathReducer,
         presentations: presentationReducer,
     },
+    devTools: process.env.REACT_APP_NODE_ENV === 'development',
 });
 
 
