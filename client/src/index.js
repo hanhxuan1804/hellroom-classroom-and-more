@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import App from "./component/app";
+import App from "./component/App";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/auth-context";
 import { SnackbarProvider } from "notistack";
