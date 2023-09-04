@@ -32,19 +32,19 @@ const HomePage = () => {
     },
   });
   const [listOwnGroup, setListOwnGroup] = React.useState(
-    groups.filter((group) => group.owner === user._id)
+    groups.filter((group) => group.owner === user?._id)
   );
   // eslint-disable-next-line no-unused-vars
   const [listOtherGroup, setListOtherGroup] = React.useState(
-    groups.filter((group) => group.owner !== user._id)
+    groups.filter((group) => group.owner !== user?._id)
   );
   const [recentActivity] = React.useState([]);
   useEffect(() => {
     if (groups.length > 0) {
-      setListOwnGroup(groups.filter((group) => group.owner === user._id));
-      setListOtherGroup(groups.filter((group) => group.owner !== user._id));
+      setListOwnGroup(groups.filter((group) => group.owner === user?._id));
+      setListOtherGroup(groups.filter((group) => group.owner !== user?._id));
     }
-  }, [groups, user._id]);
+  }, [groups, user?._id]);
   useEffect(() => {
     mutation.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
