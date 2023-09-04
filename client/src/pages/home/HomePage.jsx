@@ -6,7 +6,6 @@ import {
   Button,
   useMediaQuery,
   Skeleton,
-  Divider,
 } from "@mui/material";
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
@@ -27,7 +26,6 @@ const HomePage = () => {
   const mutation = useMutation({
     mutationFn: getPresentations,
     onSuccess: (data) => {
-      console.log(data.data.presentations);
       setPresentations(data.data.presentations);
     },
   });

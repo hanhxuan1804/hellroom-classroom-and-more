@@ -6,7 +6,6 @@ import { Slideshow } from "@mui/icons-material";
 const OwnGroupCard = (props) => {
   const { group, presentations } = props;
   const navigate = useNavigate();
-  console.log(presentations);
   return (
     <div
       style={{

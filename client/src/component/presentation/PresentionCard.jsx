@@ -16,7 +16,6 @@ import React from "react";
 
 const PresentionCard = (props) => {
   const { presentation } = props;
-  console.log(presentation);
   const typeColors = {
     card: {
       public: "#4CAF50", // Green for public presentations

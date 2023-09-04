@@ -18,6 +18,7 @@ function SlideShow(props) {
   };
   useEffect(() => {
     resizeChart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
     window.addEventListener("resize", resizeChart);

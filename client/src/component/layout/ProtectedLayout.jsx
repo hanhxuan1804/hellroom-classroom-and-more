@@ -28,7 +28,6 @@ const ProtectedLayout = () => {
     // eslint-disable-next-line
   },[]);
   const {
-    isLoading: isLoadingGroups,
     data } = useQuery({
     queryKey: ["groups", auth?.user?._id],
     queryFn: () => getGroups(auth?.user?._id),

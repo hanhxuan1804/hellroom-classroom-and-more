@@ -8,7 +8,7 @@ function ProfilePage() {
   if (user===null || user===undefined || user==={}) {
     return <ErrorPage />;
   }
-  const birthDate = new Date(user.birthDate).toISOString().slice(0, 10);
+  const birthDate = user?.birthDate ? new Date(user.birthDate).toISOString().slice(0, 10) : "";
   return (
     <Grid item xs={12} sm={8}>
       <Box sx={{ display: "flex", flexDirection: "column" }}>
