@@ -1,452 +1,307 @@
 # Folder Structure Analysis
 
-The given folder structure represents the organization of files and directories in a software project. It appears to be a client-server application, with the client-side code located in the "client" folder and the server-side code located in the "server" folder. Let's analyze the purpose of each folder and provide an overview of the application flow.
-
-## Client Folder Structure
-
--**client/**
-
-  -**.gitignore**: File specifying which files and directories should be ignored by Git version control.
-
-  -**package.json**: File containing metadata about the project and its dependencies.
-
-  -**README.md**: File containing information about the project.
-
-  -**src/**: Directory containing the source code of the client-side application.
-
-    -**api.js**: File containing API-related functions and configurations.
-
-    -**assets/**: Directory containing static assets used in the application.
-
-    -**images/**: Directory containing image assets.
-
-    -**index.js**: File exporting the image assets.
-
-    -**logo.png**: Example image file.
-
-    -**logosmall.png**: Example image file.
-
-    -**component/**: Directory containing React components used in the application.
-
-    -**app/**: Directory containing components related to the main app.
-
-    -**App.css**: CSS file for styling the App component.
-
-    -**App.jsx**: Main component of the application.
-
-    -**index.js**: File exporting the App component.
-
-    -**common/**: Directory containing common components used throughout the application.
-
-    -**footer/**: Directory containing footer-related components.
-
-    -**header/**: Directory containing header-related components.
-
-    -**Header.css**: CSS file for styling the Header component.
-
-    -**Header.jsx**: Component representing the header of the application.
-
-    -**index.js**: File exporting the Header component.
-
-    -**Dropdown.jsx**: Example component representing a dropdown menu.
-
-    -**groups/**: Directory containing components related to groups.
-
-    -**GroupCard.jsx**: Component representing a group card.
-
-    -**GroupCardExtend.jsx**: Component extending the GroupCard component.
-
-    -**GroupEdit.jsx**: Component for editing a group.
-
-    -**JoinGroup.jsx**: Component for joining a group.
-
-    -**TextEditor.jsx**: Component for text editing.
-
-    -**layout/**: Directory containing layout components.
-
-    -**index.js**: File exporting layout components.
-
-    -**ProfilePageLayout.jsx**: Component representing the layout of a profile page.
-
-    -**ProtectedLayout.jsx**: Component representing a protected layout.
-
-    -**presentation/**: Directory containing presentation-related components.
-
-    -**index.js**: File exporting presentation components.
-
-    -**ListSlide.jsx**: Component representing a list of slides.
-
-    -**PresentionCard.jsx**: Component representing a presentation card.
-
-    -**slide/**: Directory containing slide components.
-
-    -**multichoice/**: Directory containing multi-choice slide components.
-
-    -**index.js**: File exporting multi-choice slide components.
-
-    -**SlideEdit.jsx**: Component for editing a multi-choice slide.
-
-    -**SlideView.jsx**: Component for viewing a multi-choice slide.
-
-    -**SlideDetail.jsx**: Component representing the details of a slide.
-
-    -**TabPanel.jsx**: Component representing a tab panel.
-
-    -**context/**: Directory containing context providers for React components.
-
-    -**auth-context.js**: Context provider for authentication-related data.
-
-    -**socket-context.js**: Context provider for socket-related data.
-
-    -**hooks/**: Directory containing custom hooks used in the application.
-
-    -**useLocalStorage.js**: Custom hook for interacting with local storage.
-
-    -**index.css**: CSS file for global styles.
-
-    -**index.js**: Entry point of the client-side application.
-
-    -**pages/**: Directory containing React components representing different pages of the application.
-
-    -**authentication/**: Directory containing authentication-related pages.
-
-    -**active/**: Directory containing active email pages.
-
-    -**ActiveEmailPage.jsx**: Component representing the active email page.
-
-    -**index.js**: File exporting active email pages.
-
-    -**index.js**: File exporting authentication-related pages.
-
-    -**login/**: Directory containing login-related pages.
-
-    -**index.js**: File exporting login-related pages.
-
-    -**LoginPage.css**: CSS file for styling the LoginPage component.
-
-    -**LoginPage.jsx**: Component representing the login page.
-
-    -**register/**: Directory containing register-related pages.
-
-    -**index.js**: File exporting register-related pages.
-
-    -**RegisterPage.css**: CSS file for styling the RegisterPage component.
-
-    -**RegisterPage.jsx**: Component representing the register page.
-
-    -**common/**: Directory containing common pages used throughout the application.
-
-    -**ErrorPage.jsx**: Component representing an error page.
-
-    -**LoadingPage.jsx**: Component representing a loading page.
-
-    -**group/**: Directory containing group-related pages.
-
-    -**CreateGroupPage.jsx**: Component representing the create group page.
-
-    -**GroupDetailsPage.jsx**: Component representing the group details page.
-
-    -**GroupListPage.jsx**: Component representing the group list page.
-
-    -**index.js**: File exporting group-related pages.
-
-    -**JoinGroupPage.jsx**: Component representing the join group page.
-
-    -**home/**: Directory containing home-related pages.
-
-    -**HomePage.jsx**: Component representing the home page.
-
-    -**index.js**: File exporting home-related pages.
-
-    -**presentation/**: Directory containing presentation-related pages.
-
-    -**CreatePresentationPage.jsx**: Component representing the create presentation page.
-
-    -**EditPresentationPage.jsx**: Component representing the edit presentation page.
-
-    -**index.js**: File exporting presentation-related pages.
-
-    -**PresentationsPage.jsx**: Component representing the presentations page.
-
-    -**scripts.js**: JavaScript file containing scripts for presentations.
-
-    -**ShowPresentationPage.jsx**: Component representing the show presentation page.
-
-    -**user/**: Directory containing user-related pages.
-
-    -**EditProfilePage.jsx**: Component representing the edit profile page.
-
-    -**index.js**: File exporting user-related pages.
-
-    -**ProfilePage.jsx**: Component representing the profile page.
-
-    -**redux/**: Directory containing Redux-related files.
-
-    -**selector.js**: File containing Redux selector functions.
-
-    -**slice/**: Directory containing Redux slice files.
-
-    -**authSlice.js**: Redux slice file for authentication-related state.
-
-    -**groupSlice.js**: Redux slice file for group-related state.
-
-    -**pathSlice.js**: Redux slice file for path-related state.
-
-    -**presentationSlice.js**: Redux slice file for presentation-related state.
-
-    -**store.js**: File configuring the Redux store.
-
-## Server Folder Structure
-
--**server/**
-
-  -**.gitignore**: File specifying which files and directories should be ignored by Git version control.
-
-  -**component/**: Directory containing server-side components.
-
-    -**App/**: Directory containing components related to the main app.
-
-    -**app.js**: Main server application file.
-
-    -**router.js**: File containing routes for the server application.
-
-    -**auth/**: Directory containing components related to authentication.
-
-    -**authController.js**: Controller file for authentication-related logic.
-
-    -**authService.js**: Service file for authentication-related logic.
-
-    -**middleware.js**: File containing middleware functions for authentication.
-
-    -**router.js**: File containing routes for authentication.
-
-    -**group/**: Directory containing components related to groups.
-
-    -**groupController.js**: Controller file for group-related logic.
-
-    -**groupService.js**: Service file for group-related logic.
-
-    -**router.js**: File containing routes for groups.
-
-    -**groupPost/**: Directory containing components related to group posts.
-
-    -**groupPostController.js**: Controller file for group post-related logic.
-
-    -**groupPostService.js**: Service file for group post-related logic.
-
-    -**router.js**: File containing routes for group posts.
-
-    -**passport.js**: File configuring authentication strategies using Passport.js.
-
-    -**presentation/**: Directory containing components related to presentations.
-
-    -**presentationController.js**: Controller file for presentation-related logic.
-
-    -**presentationService.js**: Service file for presentation-related logic.
-
-    -**router.js**: File containing routes for presentations.
-
-    -**user/**: Directory containing components related to users.
-
-    -**router.js**: File containing routes for users.
-
-    -**userController.js**: Controller file for user-related logic.
-
-    -**userService.js**: Service file for user-related logic.
-
-  -**mongooseModel/**: Directory containing Mongoose models for database entities.
-
-    -**Group.js**: Mongoose model for groups.
-
-    -**GroupPost.js**: Mongoose model for group posts.
-
-    -**Presentation.js**: Mongoose model for presentations.
-
-    -**Slide.js**: Mongoose model for slides.
-
-    -**User.js**: Mongoose model for users.
-
-  -**package.json**: File containing metadata about the project and its dependencies.
-
-  -**readme.md**: File containing information about the project.
-
-## Application Flow
-
-The client-side application appears to be a React application utilizing Redux for state management. It follows a component-based architecture, with components organized into different directories based on their functionality. The "pages" directory contains React components representing different pages of the application, while the "component" directory contains reusable components used throughout the application.
-
-The server-side application appears to be a Node.js application using Express.js as the web framework. It follows a component-based architecture, with components organized into different directories based on their functionality. The "component" directory contains components related to different features of the application, such as authentication, groups, group posts, presentations, and users. The "mongooseModel" directory contains Mongoose models representing database entities.
-
-The client-side application communicates with the server-side application through API calls defined in the "api.js" file. The server-side application handles these API requests using the defined routes in the server-side components.
-
-Overall, the folder structure follows a modular and organized approach, separating concerns- .$hellroom.drawio.bkp
-
+The provided folder structure represents a typical project structure for a web application, specifically for a Realtime quiz-based learning platform. Let's analyze each folder and its purpose:
+
+## Root Folder
+- `.gitignore`: Specifies which files and directories should be ignored by version control system.
+- `FolderStructure.md`: A markdown file that contains the analysis of the folder structure.
+- `hellroom.drawio`: A diagram file, possibly representing the architecture or flow of the application.
+- `readme.md`: The main README file for the project.
+
+## client Folder
+- `.gitignore`: Specifies which files and directories in the client folder should be ignored by version control system.
+- `package.json`: Contains metadata and dependencies for the client-side application.
+- `README.md`: Documentation for the client-side application.
+- `src`: The source code directory for the client-side application.
+
+### src Folder
+- `api.js`: Contains API related functions or configurations.
+- `assets`: Directory for static assets used in the application.
+  - `images`: Directory for image assets used in the application.
+    - `index.js`: Exports all image files for easier imports.
+    - `logo.png`: Application logo image.
+    - `logosmall.png`: Smaller version of the application logo.
+    - `redhell.png`: Another image asset.
+- `components`: Directory for reusable components used in the application.
+  - `App`: Directory for the main App component.
+    - `App.css`: CSS styles specific to the App component.
+    - `App.jsx`: The main component rendered in the application.
+    - `index.js`: Exports the App component.
+  - `common`: Directory for common components used across the application.
+    - `footer`: Directory for the footer component.
+    - `header`: Directory for the header component.
+      - `Header.css`: CSS styles specific to the Header component.
+      - `Header.jsx`: The header component.
+      - `index.js`: Exports the Header component.
+  - `Dropdown.jsx`: A dropdown component.
+  - `groups`: Directory for components related to groups.
+    - `GroupCard.jsx`: Component for displaying a group card.
+    - `GroupCardExtend.jsx`: Extended version of the GroupCard component.
+    - `GroupEdit.jsx`: Component for editing a group.
+    - `JoinGroup.jsx`: Component for joining a group.
+    - `OwnGroupCard.jsx`: Component for displaying the user's own group card.
+    - `TextEditor.jsx`: Component for a text editor.
+  - `layout`: Directory for layout components.
+    - `index.js`: Exports layout components.
+    - `ProfilePageLayout.jsx`: Layout component for the profile page.
+    - `ProtectedLayout.jsx`: Layout component for protected pages.
+  - `presentation`: Directory for presentation-related components.
+    - `index.js`: Exports presentation-related components.
+    - `ListSlide.jsx`: Component for displaying a list of slides.
+    - `PresentionCard.jsx`: Component for displaying a presentation card.
+    - `slide`: Directory for slide components.
+      - `multichoice`: Directory for multichoice slide components.
+        - `index.js`: Exports multichoice slide components.
+        - `SlideAnswer.jsx`: Component for displaying a slide answer.
+        - `SlideEdit.jsx`: Component for editing a slide.
+        - `SlideShow.jsx`: Component for displaying a slide show.
+        - `SlideView.jsx`: Component for viewing a slide.
+    - `SlideDetail.jsx`: Component for displaying slide details.
+  - `TabPanel.jsx`: Component for a tab panel.
+- `config.js`: Configuration file for the application.
+- `context`: Directory for React context related files.
+  - `auth-context.js`: Context file for authentication.
+  - `socket-context.js`: Context file for socket connection.
+- `hooks`: Directory for custom React hooks.
+  - `useLocalStorage.js`: Custom hook for handling local storage.
+- `index.css`: Global CSS styles for the application.
+- `index.js`: Entry point for the client-side application.
+- `pages`: Directory for different pages of the application.
+  - `authentication`: Directory for authentication-related pages.
+    - `active`: Directory for active email related pages.
+      - `ActiveEmailPage.jsx`: Page for activating email.
+      - `index.js`: Exports active email related pages.
+    - `index.js`: Exports authentication-related pages.
+    - `login`: Directory for login-related pages.
+      - `index.js`: Exports login-related pages.
+      - `LoginPage.css`: CSS styles specific to the LoginPage.
+      - `LoginPage.jsx`: Page for login.
+    - `register`: Directory for register-related pages.
+      - `index.js`: Exports register-related pages.
+      - `RegisterPage.css`: CSS styles specific to the RegisterPage.
+      - `RegisterPage.jsx`: Page for registration.
+  - `common`: Directory for common pages used across the application.
+    - `ErrorPage.jsx`: Page for displaying errors.
+    - `LoadingPage.jsx`: Page for displaying loading state.
+  - `group`: Directory for group-related pages.
+    - `CreateGroupPage.jsx`: Page for creating a group.
+    - `GroupDetailsPage.jsx`: Page for displaying group details.
+    - `GroupListPage.jsx`: Page for listing groups.
+    - `index.js`: Exports group-related pages.
+    - `JoinGroupPage.jsx`: Page for joining a group.
+  - `home`: Directory for home-related pages.
+    - `HomePage.jsx`: Home page of the application.
+    - `index.js`: Exports home-related pages.
+  - `presentation`: Directory for presentation-related pages.
+    - `CreatePresentationPage.jsx`: Page for creating a presentation.
+    - `EditPresentationPage.jsx`: Page for editing a presentation.
+    - `index.js`: Exports presentation-related pages.
+    - `PresentationsPage.jsx`: Page for listing presentations.
+    - `scripts.js`: Additional scripts related to presentations.
+    - `ShowPresentationPage.jsx`: Page for displaying a presentation.
+    - `ViewPresentationPage.jsx`: Page for viewing a presentation.
+  - `user`: Directory for user-related pages.
+    - `EditProfilePage.jsx`: Page for editing user profile.
+    - `index.js`: Exports user-related pages.
+    - `ProfilePage.jsx`: Page for user profile.
+- `redux`: Directory for Redux related files.
+  - `selector.js`: Selector functions for accessing Redux store state.
+  - `slice`: Directory for Redux slices.
+    - `authSlice.js`: Redux slice for authentication related state.
+    - `groupSlice.js`: Redux slice for group related state.
+    - `pathSlice.js`: Redux slice for path related state.
+    - `presentationSlice.js`: Redux slice for presentation related state.
+  - `store.js`: Redux store configuration.
+
+## server Folder
+- `.gitignore`: Specifies which files and directories in the server folder should be ignored by version control system.
+- `component`: Directory for server-side components.
+  - `App`: Directory for the main App component.
+    - `app.js`: The main server application file.
+    - `router.js`: Router configuration for the server application.
+  - `auth`: Directory for authentication related components.
+    - `authController.js`: Controller for authentication related operations.
+    - `authService.js`: Service for authentication related operations.
+    - `middleware.js`: Middleware functions for authentication.
+    - `router.js`: Router configuration for authentication related routes.
+  - `group`: Directory for group related components.
+    - `groupController.js`: Controller for group related operations.
+    - `groupService.js`: Service for group related operations.
+    - `router.js`: Router configuration for group related routes.
+  - `groupPost`: Directory for group post related components.
+    - `groupPostController.js`: Controller for group post related operations.
+    - `groupPostService.js`: Service for group post related operations.
+    - `router.js`: Router configuration for group post related routes.
+  - `passport.js`: Passport configuration file for authentication.
+  - `presentation`: Directory for presentation related components.
+    - `presentationController.js`: Controller for presentation related operations.
+    - `presentationService.js`: Service for presentation related operations.
+    - `router.js`: Router configuration for presentation related routes.
+  - `user`: Directory for user related components.
+    - `router.js`: Router configuration for user related routes.
+    - `userController.js`: Controller for user related operations.
+    - `userService.js`: Service for user related operations.
+- `mongooseModel`: Directory for Mongoose models.
+  - `Group.js`: Mongoose model for Group.
+  - `GroupPost.js`: Mongoose model for GroupPost.
+  - `Presentation.js`: Mongoose model for Presentation.
+  - `PresentationHistory.js`: Mongoose model for PresentationHistory.
+  - `Slide.js`: Mongoose model for Slide.
+  - `User.js`: Mongoose model for User.
+- `package.json`: Contains metadata and dependencies for the server-side application.
+- `readme.md`: Documentation for the server-side application.
+- `socket`: Directory for socket related components.
+  - `presentationSocket.js`: Socket configuration for presentation related operations.
+
+## Suggestions
+- The folder structure seems well-organized and follows common conventions. However, it would be beneficial to include a `tests` directory for unit tests and a `docs` directory for additional documentation.
+- It would be helpful to have a separate folder for configuration files instead of scattering them throughout the project.
+- Consider using a consistent naming convention for files and directories. For example, using kebab case or camel case for file and directory names.
+- Ensure that the project adheres to the principles of separation of concerns and single responsibility by organizing files into appropriate directories.
+- Consider adding more comments or documentation within the code to improve code maintainability and understanding.
+- It would be beneficial to have a build process or bundler- .gitignore
 - client/
-
   - .gitignore
   - package.json
   - README.md
   - src/
-
     - api.js
     - assets/
-
       - images/
-
         - index.js
         - logo.png
         - logosmall.png
+        - redhell.png
     - component/
-
-      - app/
-
+      - App/
         - App.css
         - App.jsx
         - index.js
       - common/
-
         - footer/
         - header/
-
           - Header.css
           - Header.jsx
           - index.js
       - Dropdown.jsx
       - groups/
-
         - GroupCard.jsx
         - GroupCardExtend.jsx
         - GroupEdit.jsx
         - JoinGroup.jsx
+        - OwnGroupCard.jsx
         - TextEditor.jsx
       - layout/
-
         - index.js
         - ProfilePageLayout.jsx
         - ProtectedLayout.jsx
       - presentation/
-
         - index.js
         - ListSlide.jsx
         - PresentionCard.jsx
         - slide/
-
           - multichoice/
-
             - index.js
+            - SlideAnswer.jsx
             - SlideEdit.jsx
+            - SlideShow.jsx
             - SlideView.jsx
         - SlideDetail.jsx
       - TabPanel.jsx
+    - config.js
     - context/
-
       - auth-context.js
       - socket-context.js
     - hooks/
-
       - useLocalStorage.js
     - index.css
     - index.js
     - pages/
-
       - authentication/
-
         - active/
-
           - ActiveEmailPage.jsx
           - index.js
         - index.js
         - login/
-
           - index.js
           - LoginPage.css
           - LoginPage.jsx
         - register/
-
           - index.js
           - RegisterPage.css
           - RegisterPage.jsx
       - common/
-
         - ErrorPage.jsx
         - LoadingPage.jsx
       - group/
-
         - CreateGroupPage.jsx
         - GroupDetailsPage.jsx
         - GroupListPage.jsx
         - index.js
         - JoinGroupPage.jsx
       - home/
-
         - HomePage.jsx
         - index.js
       - presentation/
-
         - CreatePresentationPage.jsx
         - EditPresentationPage.jsx
         - index.js
         - PresentationsPage.jsx
         - scripts.js
         - ShowPresentationPage.jsx
+        - ViewPresentationPage.jsx
       - user/
-
         - EditProfilePage.jsx
         - index.js
         - ProfilePage.jsx
     - redux/
-
       - selector.js
       - slice/
-
         - authSlice.js
         - groupSlice.js
         - pathSlice.js
         - presentationSlice.js
       - store.js
+- FolderStructure.md
 - hellroom.drawio
+- readme.md
 - Realtime quiz-based learning platform.xlsx
 - server/
-
   - .gitignore
   - component/
-
     - App/
-
       - app.js
       - router.js
     - auth/
-
       - authController.js
       - authService.js
       - middleware.js
       - router.js
     - group/
-
       - groupController.js
       - groupService.js
       - router.js
     - groupPost/
-
       - groupPostController.js
       - groupPostService.js
       - router.js
     - passport.js
     - presentation/
-
       - presentationController.js
       - presentationService.js
       - router.js
     - user/
-
       - router.js
       - userController.js
       - userService.js
   - mongooseModel/
-
     - Group.js
     - GroupPost.js
     - Presentation.js
+    - PresentationHistory.js
     - Slide.js
     - User.js
   - package.json
   - readme.md
+  - socket/
+    - presentationSocket.js
